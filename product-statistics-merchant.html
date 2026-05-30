@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品统计 - 商家管理端</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 { font-size: 20px; font-weight: 600; }
+
+        .header-nav { display: flex; gap: 20px; }
+
+        .header-nav a {
+            color: white; text-decoration: none; font-size: 14px; opacity: 0.9;
+        }
+
+        .header-nav a:hover { opacity: 1; }
+
+        .content-area {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .page-title {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 28px;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .time-tabs {
+            display: flex;
+            background: #f0f2f5;
+            border-radius: 8px;
+            padding: 3px;
+        }
+
+        .time-tab {
+            padding: 7px 18px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #666;
+            transition: all 0.2s;
+        }
+
+        .time-tab.active {
+            background: white;
+            color: #667eea;
+            font-weight: 500;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .time-range {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .time-range input[type="date"] {
+            padding: 7px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .time-range input[type="date"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .time-range span { color: #999; font-size: 13px; }
+
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: #fafbfc;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #eef0f4;
+            transition: box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .stat-card .stat-compare {
+            font-size: 12px;
+            color: #999;
+            margin-top: 6px;
+        }
+
+        .stat-card .stat-compare.up { color: #10b981; }
+        .stat-card .stat-compare.down { color: #ef4444; }
+
+        .rank-tabs {
+            display: flex;
+            gap: 4px;
+            background: #f0f2f5;
+            border-radius: 8px;
+            padding: 3px;
+        }
+
+        .rank-tab {
+            padding: 7px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #666;
+            transition: all 0.2s;
+        }
+
+        .rank-tab.active {
+            background: white;
+            color: #667eea;
+            font-weight: 500;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .rank-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover { opacity: 0.9; }
+
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .product-table th {
+            background: #fafbfc;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+            border-bottom: 2px solid #eee;
+        }
+
+        .product-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .product-table tbody tr:hover td {
+            background: #fafbfc;
+        }
+
+        .product-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .product-img {
+            width: 56px;
+            height: 56px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #e8ecf4, #dce1ed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .product-name {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .product-merchant {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .rank-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .rank-1 { background: #fff3e0; color: #e65100; }
+        .rank-2 { background: #f3f5f7; color: #6c7a8d; }
+        .rank-3 { background: #fdf2e0; color: #b7791f; }
+        .rank-other { color: #999; }
+
+        .sale-amount { color: #e74c3c; font-weight: 500; }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .pagination button {
+            width: 36px;
+            height: 36px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #666;
+            transition: all 0.2s;
+        }
+
+        .pagination button:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .pagination button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .pagination .page-info {
+            font-size: 13px;
+            color: #999;
+            margin: 0 8px;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .content-area { padding: 16px; }
+            .stat-cards { grid-template-columns: repeat(2, 1fr); }
+            .section-header { flex-direction: column; align-items: flex-start; }
+            .product-table { font-size: 12px; }
+            .product-table th, .product-table td { padding: 10px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>📊 商家管理端</h1>
+        <nav class="header-nav">
+            <a href="index.html">首页</a>
+            <a href="product-statistics-merchant.html">商品统计</a>
+        </nav>
+    </header>
+
+    <div class="content-area">
+        <h2 class="page-title">商品统计</h2>
+        <p class="page-subtitle">商品概况概览与商品销售排行分析（商家端）</p>
+
+        <div class="section-card" id="overviewSection">
+            <div class="section-header">
+                <div class="section-title">📈 商品概况</div>
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <div class="time-tabs" id="overviewTimeTabs">
+                        <button class="time-tab active" data-range="7d" onclick="switchOverviewTime('7d')">近7天</button>
+                        <button class="time-tab" data-range="30d" onclick="switchOverviewTime('30d')">近30天</button>
+                        <button class="time-tab" data-range="custom" onclick="switchOverviewTime('custom')">自定义</button>
+                    </div>
+                    <div class="time-range" id="overviewCustomRange" style="display: none;">
+                        <input type="date" id="overviewStartDate">
+                        <span>至</span>
+                        <input type="date" id="overviewEndDate">
+                        <button class="btn btn-primary" onclick="loadOverviewData()">查询</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-cards">
+                <div class="stat-card">
+                    <div class="stat-label">新增商品数</div>
+                    <div class="stat-value" id="newProducts">1,286</div>
+                    <div class="stat-compare up">较上周期 +12.5%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">商品收藏数</div>
+                    <div class="stat-value" id="favorites">8,452</div>
+                    <div class="stat-compare up">较上周期 +8.3%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">交易总件数</div>
+                    <div class="stat-value" id="totalOrders">3,921</div>
+                    <div class="stat-compare down">较上周期 -2.1%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">交易成功数</div>
+                    <div class="stat-value" id="successOrders">3,518</div>
+                    <div class="stat-compare up">较上周期 +5.7%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card" id="rankingSection">
+            <div class="section-header">
+                <div class="section-title">🏆 商品排行</div>
+                <div class="rank-controls">
+                    <div class="rank-tabs" id="rankTabs">
+                        <button class="rank-tab active" data-rank="favorites" onclick="switchRankType('favorites')">收藏数量</button>
+                        <button class="rank-tab" data-rank="amount" onclick="switchRankType('amount')">销售额</button>
+                        <button class="rank-tab" data-rank="volume" onclick="switchRankType('volume')">销量</button>
+                    </div>
+                    <div class="time-range">
+                        <input type="date" id="rankStartDate">
+                        <span>至</span>
+                        <input type="date" id="rankEndDate">
+                        <button class="btn btn-primary" onclick="loadRankingData()">查询</button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="product-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">排名</th>
+                        <th>商品信息</th>
+                        <th style="width: 100px;" id="rankCol1">收藏数量</th>
+                        <th style="width: 100px;" id="rankCol2">销量</th>
+                        <th style="width: 120px;" id="rankCol3">销售额</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody"></tbody>
+            </table>
+
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <script>
+        var overviewTimeRange = '7d';
+        var rankType = 'favorites';
+        var currentPage = 1;
+        var pageSize = 8;
+        var totalPages = 10;
+
+        var mockProducts = [
+            { id: 1, name: '华为Mate 60 Pro 智能手机', merchant: '华为旗舰店', image: null, favorites: 12580, sales: 3890, amount: 27230000 },
+            { id: 2, name: 'Apple iPhone 15 Pro Max', merchant: '苹果官方旗舰店', image: null, favorites: 10240, sales: 4210, amount: 42100000 },
+            { id: 3, name: '戴森V15无绳吸尘器', merchant: '戴森官方旗舰店', image: null, favorites: 8960, sales: 2150, amount: 10750000 },
+            { id: 4, name: '茅台飞天53度 500ml', merchant: '茅台官方旗舰店', image: null, favorites: 7820, sales: 5680, amount: 8520000 },
+            { id: 5, name: 'Nike Air Jordan 1 运动鞋', merchant: '耐克官方旗舰店', image: null, favorites: 6890, sales: 4320, amount: 5184000 },
+            { id: 6, name: '索尼PlayStation 5 游戏机', merchant: '索尼旗舰店', image: null, favorites: 6540, sales: 1890, amount: 7371000 },
+            { id: 7, name: '美的变频空调 1.5匹', merchant: '美的官方旗舰店', image: null, favorites: 5980, sales: 2760, amount: 8280000 },
+            { id: 8, name: '海蓝之谜精华面霜60ml', merchant: '海蓝之谜旗舰店', image: null, favorites: 5670, sales: 1540, amount: 4620000 },
+            { id: 9, name: '小米14 Pro 智能手机', merchant: '小米官方旗舰店', image: null, favorites: 5320, sales: 3560, amount: 14240000 },
+            { id: 10, name: 'Adidas Ultra Boost跑鞋', merchant: '阿迪达斯旗舰店', image: null, favorites: 4980, sales: 3120, amount: 3744000 },
+            { id: 11, name: 'SK-II 神仙水230ml', merchant: 'SK-II官方旗舰店', image: null, favorites: 4650, sales: 2890, amount: 4335000 },
+            { id: 12, name: '联想ThinkPad X1 Carbon', merchant: '联想官方旗舰店', image: null, favorites: 4320, sales: 1240, amount: 11160000 },
+            { id: 13, name: '伊利金典纯牛奶 250ml*24', merchant: '伊利官方旗舰店', image: null, favorites: 3980, sales: 8920, amount: 892000 },
+            { id: 14, name: '大疆Mavic 3无人机', merchant: '大疆官方旗舰店', image: null, favorites: 3760, sales: 890, amount: 11570000 },
+            { id: 15, name: '雅诗兰黛小棕瓶精华', merchant: '雅诗兰黛旗舰店', image: null, favorites: 3450, sales: 2340, amount: 4680000 },
+            { id: 16, name: '格力冰箱 BCD-520W', merchant: '格力官方旗舰店', image: null, favorites: 3210, sales: 1560, amount: 6240000 },
+            { id: 17, name: '可口可乐 330ml*24罐', merchant: '可口可乐旗舰店', image: null, favorites: 2980, sales: 12500, amount: 750000 },
+            { id: 18, name: '五粮液 52度500ml', merchant: '五粮液旗舰店', image: null, favorites: 2760, sales: 3450, amount: 5175000 },
+            { id: 19, name: '华为Watch GT4 智能手表', merchant: '华为旗舰店', image: null, favorites: 2540, sales: 1780, amount: 3560000 },
+            { id: 20, name: '三只松鼠坚果大礼包', merchant: '三只松鼠旗舰店', image: null, favorites: 2310, sales: 6780, amount: 678000 },
+            { id: 21, name: '农夫山泉矿泉水 550ml*24', merchant: '农夫山泉旗舰店', image: null, favorites: 1980, sales: 18900, amount: 567000 },
+            { id: 22, name: '兰蔻小黑瓶肌底液', merchant: '兰蔻官方旗舰店', image: null, favorites: 1870, sales: 1980, amount: 5940000 },
+            { id: 23, name: '海尔电热水器60L', merchant: '海尔官方旗舰店', image: null, favorites: 1650, sales: 2340, amount: 7020000 },
+            { id: 24, name: 'OPPO Find X7 手机', merchant: 'OPPO官方旗舰店', image: null, favorites: 1430, sales: 2890, amount: 11560000 },
+            { id: 25, name: '蒙牛纯甄酸奶 200g*24', merchant: '蒙牛旗舰店', image: null, favorites: 1320, sales: 5670, amount: 567000 },
+            { id: 26, name: '三星Galaxy S24 Ultra', merchant: '三星官方旗舰店', image: null, favorites: 1210, sales: 1340, amount: 12060000 },
+            { id: 27, name: 'Lululemon瑜伽裤', merchant: 'Lululemon旗舰店', image: null, favorites: 1150, sales: 2890, amount: 2890000 },
+            { id: 28, name: '飞利浦电动牙刷HX9', merchant: '飞利浦旗舰店', image: null, favorites: 1080, sales: 3120, amount: 1872000 },
+            { id: 29, name: '百岁山矿泉水570ml*24', merchant: '百岁山旗舰店', image: null, favorites: 960, sales: 8900, amount: 445000 },
+            { id: 30, name: '惠普打印机 LaserJet', merchant: '惠普官方旗舰店', image: null, favorites: 870, sales: 765, amount: 2295000 },
+            { id: 31, name: '安踏C37跑鞋', merchant: '安踏官方旗舰店', image: null, favorites: 820, sales: 4560, amount: 2736000 },
+            { id: 32, name: '德芙巧克力礼盒 588g', merchant: '德芙旗舰店', image: null, favorites: 760, sales: 6780, amount: 678000 }
+        ];
+
+        function initDates() {
+            var now = new Date();
+            var firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            var lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+            document.getElementById('rankStartDate').value = formatDate(firstDay);
+            document.getElementById('rankEndDate').value = formatDate(lastDay);
+
+            var sevenDaysAgo = new Date(now.getTime() - 7 * 86400000);
+            document.getElementById('overviewStartDate').value = formatDate(sevenDaysAgo);
+            document.getElementById('overviewEndDate').value = formatDate(now);
+        }
+
+        function formatDate(date) {
+            var y = date.getFullYear();
+            var m = String(date.getMonth() + 1).padStart(2, '0');
+            var d = String(date.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + d;
+        }
+
+        function switchOverviewTime(range) {
+            overviewTimeRange = range;
+
+            var tabs = document.querySelectorAll('#overviewTimeTabs .time-tab');
+            tabs.forEach(function(tab) {
+                tab.classList.remove('active');
+                if (tab.dataset.range === range) {
+                    tab.classList.add('active');
+                }
+            });
+
+            var customRange = document.getElementById('overviewCustomRange');
+            if (range === 'custom') {
+                customRange.style.display = 'flex';
+            } else {
+                customRange.style.display = 'none';
+                loadOverviewData();
+            }
+        }
+
+        function loadOverviewData() {
+            var newProducts = overviewTimeRange === '7d' ? 1286 : (overviewTimeRange === '30d' ? 5230 : 892);
+            var favorites = overviewTimeRange === '7d' ? 8452 : (overviewTimeRange === '30d' ? 32180 : 5678);
+            var totalOrders = overviewTimeRange === '7d' ? 3921 : (overviewTimeRange === '30d' ? 15678 : 2890);
+            var successOrders = overviewTimeRange === '7d' ? 3518 : (overviewTimeRange === '30d' ? 14056 : 2601);
+
+            animateNumber('newProducts', newProducts);
+            animateNumber('favorites', favorites);
+            animateNumber('totalOrders', totalOrders);
+            animateNumber('successOrders', successOrders);
+        }
+
+        function animateNumber(elementId, target) {
+            var el = document.getElementById(elementId);
+            var current = parseInt(el.textContent.replace(/,/g, '')) || 0;
+            var step = Math.ceil(Math.abs(target - current) / 30);
+            var timer = setInterval(function() {
+                if (Math.abs(current - target) <= step) {
+                    current = target;
+                    el.textContent = current.toLocaleString();
+                    clearInterval(timer);
+                } else {
+                    current += current < target ? step : -step;
+                    el.textContent = current.toLocaleString();
+                }
+            }, 20);
+        }
+
+        function switchRankType(type) {
+            rankType = type;
+            var tabs = document.querySelectorAll('#rankTabs .rank-tab');
+            tabs.forEach(function(tab) {
+                tab.classList.remove('active');
+                if (tab.dataset.rank === type) {
+                    tab.classList.add('active');
+                }
+            });
+            currentPage = 1;
+            updateTableHeaders();
+            loadRankingData();
+        }
+
+        function updateTableHeaders() {
+            var col1 = document.getElementById('rankCol1');
+            var col2 = document.getElementById('rankCol2');
+            var col3 = document.getElementById('rankCol3');
+
+            if (rankType === 'favorites') {
+                col1.textContent = '收藏数量';
+                col1.style.fontWeight = '700';
+                col1.style.color = '#667eea';
+                col2.textContent = '销量';
+                col2.style.fontWeight = '500';
+                col2.style.color = '#666';
+                col3.textContent = '销售额';
+                col3.style.fontWeight = '500';
+                col3.style.color = '#666';
+            } else if (rankType === 'amount') {
+                col2.textContent = '销量';
+                col2.style.fontWeight = '500';
+                col2.style.color = '#666';
+                col3.textContent = '销售额';
+                col3.style.fontWeight = '700';
+                col3.style.color = '#667eea';
+                col1.textContent = '收藏数量';
+                col1.style.fontWeight = '500';
+                col1.style.color = '#666';
+            } else {
+                col2.textContent = '销量';
+                col2.style.fontWeight = '700';
+                col2.style.color = '#667eea';
+                col1.textContent = '收藏数量';
+                col1.style.fontWeight = '500';
+                col1.style.color = '#666';
+                col3.textContent = '销售额';
+                col3.style.fontWeight = '500';
+                col3.style.color = '#666';
+            }
+        }
+
+        function loadRankingData() {
+            totalPages = Math.ceil(mockProducts.length / pageSize);
+
+            var sorted = mockProducts.slice();
+            if (rankType === 'favorites') {
+                sorted.sort(function(a, b) { return b.favorites - a.favorites; });
+            } else if (rankType === 'amount') {
+                sorted.sort(function(a, b) { return b.amount - a.amount; });
+            } else {
+                sorted.sort(function(a, b) { return b.sales - a.sales; });
+            }
+
+            var start = (currentPage - 1) * pageSize;
+            var pageData = sorted.slice(start, start + pageSize);
+
+            var tbody = document.getElementById('productTableBody');
+            tbody.innerHTML = pageData.map(function(product, idx) {
+                var rank = start + idx + 1;
+                var rankClass = rank === 1 ? 'rank-1' : (rank === 2 ? 'rank-2' : (rank === 3 ? 'rank-3' : 'rank-other'));
+                var rankDisplay = rank <= 3 ? rank : rank;
+
+                return '<tr>' +
+                    '<td><div class="rank-num ' + rankClass + '">' + rankDisplay + '</div></td>' +
+                    '<td>' +
+                        '<div class="product-info">' +
+                            '<div class="product-img">📦</div>' +
+                            '<div>' +
+                                '<div class="product-name">' + product.name + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</td>' +
+                    '<td>' + product.favorites.toLocaleString() + '</td>' +
+                    '<td>' + product.sales.toLocaleString() + '</td>' +
+                    '<td><span class="sale-amount">¥' + (product.amount / 10000).toFixed(2) + '万</span></td>' +
+                '</tr>';
+            }).join('');
+
+            renderPagination();
+        }
+
+        function renderPagination() {
+            var pagination = document.getElementById('pagination');
+            var html = '';
+
+            html += '<button ' + (currentPage === 1 ? 'disabled' : '') + ' onclick="goToPage(' + (currentPage - 1) + ')">◀</button>';
+
+            var startPage = Math.max(1, currentPage - 2);
+            var endPage = Math.min(totalPages, currentPage + 2);
+
+            for (var i = startPage; i <= endPage; i++) {
+                html += '<button class="' + (i === currentPage ? 'active' : '') + '" onclick="goToPage(' + i + ')">' + i + '</button>';
+            }
+
+            html += '<button ' + (currentPage === totalPages ? 'disabled' : '') + ' onclick="goToPage(' + (currentPage + 1) + ')">▶</button>';
+            html += '<span class="page-info">共 ' + totalPages + ' 页</span>';
+
+            pagination.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadRankingData();
+        }
+
+        initDates();
+        loadOverviewData();
+        loadRankingData();
+    </script>
+</body>
+</html>
