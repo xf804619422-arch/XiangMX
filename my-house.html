@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的房屋 - 微信小程序</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #e8ecf1;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+
+        .phone-frame {
+            width: 420px;
+            min-height: 780px;
+            background: #f5f6f8;
+            border-radius: 32px;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            font-size: 12px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .nav-bar {
+            height: 48px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .nav-back {
+            position: absolute;
+            left: 16px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #333;
+            padding: 4px;
+        }
+
+        .nav-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .page-content {
+            padding: 16px;
+            max-height: 640px;
+            overflow-y: auto;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .section-subtitle {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+            display: block;
+            font-weight: 500;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+            background: #fafbfc;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%23999' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        .form-select:focus { outline: none; border-color: #4facfe; }
+
+        .form-select:disabled {
+            background: #f0f0f0;
+            color: #bbb;
+            cursor: not-allowed;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        .form-textarea:focus { outline: none; border-color: #4facfe; }
+
+        .btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+        .btn-outline {
+            background: white;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .btn-outline:hover { border-color: #4facfe; color: #4facfe; }
+
+        .btn-danger {
+            background: white;
+            color: #ef4444;
+            border: 1px solid #fecaca;
+        }
+
+        .btn-danger:hover { background: #fef2f2; }
+
+        .btn-warning {
+            background: white;
+            color: #f59e0b;
+            border: 1px solid #fde68a;
+        }
+
+        .btn-warning:hover { background: #fffbeb; }
+
+        .btn-sm {
+            width: auto;
+            padding: 6px 14px;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .cascade-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .cascade-col3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .badge-reject {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .house-info-display {
+            background: #f0f9ff;
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid #bae6fd;
+        }
+
+        .house-info-row {
+            display: flex;
+            align-items: center;
+            padding: 6px 0;
+        }
+
+        .house-info-label {
+            width: 72px;
+            font-size: 13px;
+            color: #999;
+            flex-shrink: 0;
+        }
+
+        .house-info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .member-list-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #f5f5f5;
+            gap: 12px;
+        }
+
+        .member-list-item:last-child { border-bottom: none; }
+
+        .member-avatar {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .member-info { flex: 1; }
+        .member-name { font-size: 14px; font-weight: 500; color: #333; }
+        .member-role { font-size: 12px; color: #999; margin-top: 2px; }
+
+        .member-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .tag-owner { background: #dbeafe; color: #1d4ed8; }
+        .tag-family { background: #f3e8ff; color: #7c3aed; }
+        .tag-tenant { background: #fce7f3; color: #be185d; }
+
+        .property-gold-card {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #fde68a;
+            margin-bottom: 14px;
+        }
+
+        .gold-amount {
+            font-size: 36px;
+            font-weight: 700;
+            color: #d97706;
+        }
+
+        .gold-label {
+            font-size: 13px;
+            color: #b45309;
+            margin-top: 4px;
+        }
+
+        .gold-detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 13px;
+        }
+
+        .gold-detail-item:last-child { border-bottom: none; }
+        .gold-detail-time { color: #999; }
+        .gold-detail-amount { font-weight: 600; }
+        .gold-plus { color: #059669; }
+        .gold-minus { color: #dc2626; }
+
+        .tabs {
+            display: flex;
+            background: #f5f6f8;
+            border-radius: 8px;
+            padding: 3px;
+            margin-bottom: 16px;
+        }
+
+        .tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: none;
+        }
+
+        .tab-item.active {
+            background: white;
+            color: #333;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-dialog {
+            background: white;
+            border-radius: 16px;
+            width: 320px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .modal-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .modal-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .modal-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-btns .btn {
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #bbb;
+        }
+
+        .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+        .empty-state .empty-text { font-size: 14px; }
+
+        .toast {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(0,0,0,0.78);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        @media (max-width: 460px) {
+            .phone-frame { width: 100%; border-radius: 0; min-height: 100vh; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>📶 🔋</span>
+        </div>
+        <div class="nav-bar">
+            <button class="nav-back" onclick="window.location.href='index.html'">&lt;</button>
+            <span class="nav-title">我的房屋</span>
+        </div>
+        <div class="page-content" id="pageContent"></div>
+    </div>
+
+    <div class="modal-overlay" id="unbindModal">
+        <div class="modal-dialog">
+            <div class="modal-icon">⚠</div>
+            <div class="modal-title">确认解绑</div>
+            <div class="modal-text">解绑后将不再展示该房屋信息，无需审核立即生效。确定要解绑吗？</div>
+            <div class="modal-btns">
+                <button class="btn btn-outline" onclick="closeModal('unbindModal')">取消</button>
+                <button class="btn" style="background:#ef4444;color:white;" onclick="confirmUnbind()">确认解绑</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="cancelReviewModal">
+        <div class="modal-dialog">
+            <div class="modal-icon">❓</div>
+            <div class="modal-title">撤销审核</div>
+            <div class="modal-text">确定要撤销当前审核申请吗？撤销后可重新提交认证信息。</div>
+            <div class="modal-btns">
+                <button class="btn btn-outline" onclick="closeModal('cancelReviewModal')">取消</button>
+                <button class="btn btn-primary" onclick="confirmCancelReview()">确定撤销</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var currentState = 'unauthenticated';
+        var pendingHouseData = null;
+        var authenticatedHouseData = null;
+
+        var houseData = {
+            community: '阳光花园',
+            phase: '二期',
+            building: '3栋',
+            unit: '2单元',
+            floor: '12层',
+            room: '1203号',
+            note: '我是业主，这是我的房产证编号：F-2024001'
+        };
+
+        var members = [
+            { name: '张明', role: '户主', tag: 'owner', phone: '138****5678' },
+            { name: '李芳', role: '配偶', tag: 'family', phone: '139****8901' },
+            { name: '张小雨', role: '子女', tag: 'family', phone: '' },
+            { name: '陈伟', role: '租客', tag: 'tenant', phone: '185****3456' }
+        ];
+
+        var goldDetails = [
+            { time: '2026-05-30 14:30', desc: '线上购物奖励（订单¥358）', amount: '+¥5.37', type: 'plus' },
+            { time: '2026-05-29 18:20', desc: '线下扫码支付奖励（¥120）', amount: '+¥1.20', type: 'plus' },
+            { time: '2026-05-28 10:15', desc: '线上购物奖励（订单¥990）', amount: '+¥14.85', type: 'plus' },
+            { time: '2026-05-27 16:45', desc: '缴纳物业费抵扣', amount: '-¥50.00', type: 'minus' },
+            { time: '2026-05-26 12:30', desc: '线下扫码支付奖励（¥85）', amount: '+¥0.85', type: 'plus' },
+            { time: '2026-05-25 09:00', desc: '平台活动赠送', amount: '+¥20.00', type: 'plus' }
+        ];
+
+        var communityOptions = ['阳光花园', '翡翠湾', '碧桂园', '绿城玫瑰园'];
+        var phaseOptions = ['一期', '二期', '三期'];
+        var buildingOptions = ['1栋', '2栋', '3栋', '4栋', '5栋'];
+        var unitOptions = ['1单元', '2单元', '3单元'];
+        var floorOptions = [];
+        for (var i = 1; i <= 33; i++) floorOptions.push(i + '层');
+        var roomOptions = [];
+        for (var i = 1; i <= 6; i++) {
+            var prefix = (1200 + i).toString();
+            roomOptions.push(prefix + '号');
+        }
+
+        var pickerValues = {
+            community: '',
+            phase: '',
+            building: '',
+            unit: '',
+            floor: '',
+            room: ''
+        };
+
+        function generateSelect(name, options, placeholder) {
+            var selected = pickerValues[name] || '';
+            var html = '<select class="form-select" id="pick_' + name + '" onchange="onPickerChange(\'' + name + '\')">';
+            html += '<option value="">' + placeholder + '</option>';
+            for (var i = 0; i < options.length; i++) {
+                var opt = options[i];
+                html += '<option value="' + opt + '"' + (selected === opt ? ' selected' : '') + '>' + opt + '</option>';
+            }
+            html += '</select>';
+            return html;
+        }
+
+        function onPickerChange(name) {
+            var el = document.getElementById('pick_' + name);
+            pickerValues[name] = el ? el.value : '';
+
+            if (name === 'community') {
+                pickerValues.phase = '';
+            }
+            if (name === 'community' || name === 'phase') {
+                pickerValues.building = '';
+            }
+            if (name === 'community' || name === 'phase' || name === 'building') {
+                pickerValues.unit = '';
+            }
+            if (name === 'community' || name === 'phase' || name === 'building' || name === 'unit') {
+                pickerValues.floor = '';
+            }
+            if (name !== 'room') {
+                pickerValues.room = '';
+            }
+
+            if (currentState === 'unauthenticated' || currentState === 'modifying') {
+                renderAuthPage(currentState === 'modifying');
+            }
+        }
+
+        function renderAuthPage(isModify) {
+            var html = '';
+            html += '<div class="section-card">';
+            html += '<div class="section-title">' + (isModify ? '修改认证信息' : '认证你的房屋') + '</div>';
+            html += '<div class="section-subtitle">' + (isModify ? '修改认证信息需重新审核' : '选择你所在的房屋位置，提交审核后即可完成认证') + '</div>';
+
+            html += '<div class="form-group"><label class="form-label">小区</label>';
+            html += generateSelect('community', communityOptions, '请选择小区');
+            html += '</div>';
+
+            html += '<div class="form-group"><label class="form-label">期数</label>';
+            html += generateSelect('phase', phaseOptions, '请选择期数');
+            html += '</div>';
+
+            html += '<div class="cascade-row">';
+            html += '<div class="form-group"><label class="form-label">楼栋</label>';
+            html += generateSelect('building', buildingOptions, '请选择楼栋');
+            html += '</div>';
+            html += '<div class="form-group"><label class="form-label">单元</label>';
+            html += generateSelect('unit', unitOptions, '请选择单元');
+            html += '</div>';
+            html += '</div>';
+
+            html += '<div class="cascade-row">';
+            html += '<div class="form-group"><label class="form-label">层数</label>';
+            html += generateSelect('floor', floorOptions, '请选择层数');
+            html += '</div>';
+            html += '<div class="form-group"><label class="form-label">房号</label>';
+            html += generateSelect('room', roomOptions, '请选择房号');
+            html += '</div>';
+            html += '</div>';
+
+            html += '<div class="form-group"><label class="form-label">认证备注</label>';
+            html += '<textarea class="form-textarea" id="authNote" placeholder="请填写认证说明，如：我是该房号的业主/住户...">' + (pickerValues.note || '') + '</textarea>';
+            html += '</div>';
+
+            if (isModify) {
+                html += '<div style="display:flex;gap:10px;">';
+                html += '<button class="btn btn-outline" style="flex:1;" onclick="switchState(\'authenticated\')">取消修改</button>';
+                html += '<button class="btn btn-primary" style="flex:1;" onclick="submitModify()">提交修改</button>';
+                html += '</div>';
+            } else {
+                html += '<button class="btn btn-primary" onclick="submitAuth()">提交审核</button>';
+            }
+
+            html += '</div>';
+
+            if (!isModify) {
+                html += '<div class="section-card"><div class="empty-state">';
+                html += '<div class="empty-icon">🏘</div>';
+                html += '<div class="empty-text">认证后可查看同住成员<br>及物业金信息</div>';
+                html += '</div></div>';
+            }
+
+            document.getElementById('pageContent').innerHTML = html;
+        }
+
+        function submitAuth() {
+            var allFilled = true;
+            var keys = ['community', 'phase', 'building', 'unit', 'floor', 'room'];
+            for (var i = 0; i < keys.length; i++) {
+                if (!pickerValues[keys[i]]) { allFilled = false; break; }
+            }
+            if (!allFilled) {
+                showToast('请完善所有房屋信息');
+                return;
+            }
+
+            var noteEl = document.getElementById('authNote');
+            pickerValues.note = noteEl ? noteEl.value : '';
+            pendingHouseData = JSON.parse(JSON.stringify(pickerValues));
+
+            currentState = 'reviewing';
+            renderReviewPage();
+            showToast('认证申请已提交，请等待审核');
+        }
+
+        function submitModify() {
+            var allFilled = true;
+            var keys = ['community', 'phase', 'building', 'unit', 'floor', 'room'];
+            for (var i = 0; i < keys.length; i++) {
+                if (!pickerValues[keys[i]]) { allFilled = false; break; }
+            }
+            if (!allFilled) {
+                showToast('请完善所有房屋信息');
+                return;
+            }
+
+            var noteEl = document.getElementById('authNote');
+            pickerValues.note = noteEl ? noteEl.value : '';
+            pendingHouseData = JSON.parse(JSON.stringify(pickerValues));
+
+            currentState = 'modify_reviewing';
+            renderModifyReviewPage();
+            showToast('修改申请已提交，请等待审核');
+        }
+
+        function renderReviewPage() {
+            var d = pendingHouseData;
+            var html = '';
+            html += '<div class="section-card">';
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">';
+            html += '<div class="section-title" style="margin-bottom:0;">认证审核中</div>';
+            html += '<span class="status-badge badge-pending">审核中</span>';
+            html += '</div>';
+
+            html += '<div class="house-info-display">';
+            html += '<div class="house-info-row"><span class="house-info-label">小区</span><span class="house-info-value">' + d.community + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">期数</span><span class="house-info-value">' + d.phase + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">楼栋</span><span class="house-info-value">' + d.building + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">单元</span><span class="house-info-value">' + d.unit + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">层数</span><span class="house-info-value">' + d.floor + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">房号</span><span class="house-info-value">' + d.room + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">备注</span><span class="house-info-value">' + (d.note || '无') + '</span></div>';
+            html += '</div>';
+
+            html += '<div style="margin-top:14px;display:flex;gap:10px;">';
+            html += '<button class="btn btn-outline btn-sm" onclick="openModal(\'cancelReviewModal\')" style="flex:1;">撤销申请</button>';
+            html += '<button class="btn" style="flex:1;background:#059669;color:white;font-size:12px;border-radius:4px;padding:6px;" onclick="simulateApprove()">模拟：审核通过</button>';
+            html += '</div>';
+            html += '</div>';
+            document.getElementById('pageContent').innerHTML = html;
+        }
+
+        function renderModifyReviewPage() {
+            var d = pendingHouseData;
+            var html = '';
+            html += '<div class="section-card">';
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">';
+            html += '<div class="section-title" style="margin-bottom:0;">修改审核中</div>';
+            html += '<span class="status-badge badge-pending">审核中</span>';
+            html += '</div>';
+
+            html += '<div class="house-info-display">';
+            html += '<div class="house-info-row"><span class="house-info-label">小区</span><span class="house-info-value">' + d.community + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">期数</span><span class="house-info-value">' + d.phase + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">楼栋</span><span class="house-info-value">' + d.building + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">单元</span><span class="house-info-value">' + d.unit + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">层数</span><span class="house-info-value">' + d.floor + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">房号</span><span class="house-info-value">' + d.room + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">备注</span><span class="house-info-value">' + (d.note || '无') + '</span></div>';
+            html += '</div>';
+
+            html += '<div style="margin-top:12px;font-size:12px;color:#999;">原认证信息：' + authenticatedHouseData.community + ' ' + authenticatedHouseData.phase + ' ' + authenticatedHouseData.building + ' ' + authenticatedHouseData.unit + ' ' + authenticatedHouseData.floor + ' ' + authenticatedHouseData.room + '</div>';
+
+            html += '<div style="margin-top:14px;display:flex;gap:10px;">';
+            html += '<button class="btn btn-outline btn-sm" onclick="openModal(\'cancelReviewModal\')" style="flex:1;">撤销申请</button>';
+            html += '<button class="btn" style="flex:1;background:#059669;color:white;font-size:12px;border-radius:4px;padding:6px;" onclick="simulateModifyApprove()">模拟：审核通过</button>';
+            html += '</div>';
+            html += '</div>';
+            document.getElementById('pageContent').innerHTML = html;
+        }
+
+        function simulateApprove() {
+            authenticatedHouseData = JSON.parse(JSON.stringify(pendingHouseData));
+            pendingHouseData = null;
+            currentState = 'authenticated';
+            renderAuthenticatedPage();
+            showToast('审核已通过！');
+        }
+
+        function simulateModifyApprove() {
+            authenticatedHouseData = JSON.parse(JSON.stringify(pendingHouseData));
+            pendingHouseData = null;
+            currentState = 'authenticated';
+            pickerValues = JSON.parse(JSON.stringify(authenticatedHouseData));
+            renderAuthenticatedPage();
+            showToast('修改审核已通过！');
+        }
+
+        function confirmCancelReview() {
+            pendingHouseData = null;
+            currentState = 'unauthenticated';
+            pickerValues = {
+                community: '',
+                phase: '',
+                building: '',
+                unit: '',
+                floor: '',
+                room: '',
+                note: ''
+            };
+            closeModal('cancelReviewModal');
+            renderAuthPage(false);
+            showToast('已撤销审核申请');
+        }
+
+        function renderAuthenticatedPage() {
+            var d = authenticatedHouseData;
+            var tab = window._memberTab || 'members';
+            var html = '';
+
+            html += '<div class="section-card">';
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">';
+            html += '<div><div class="section-title" style="margin-bottom:0;">已认证房屋</div></div>';
+            html += '<span class="status-badge badge-success">已认证</span>';
+            html += '</div>';
+
+            html += '<div class="house-info-display">';
+            html += '<div class="house-info-row"><span class="house-info-label">小区</span><span class="house-info-value">' + d.community + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">期数</span><span class="house-info-value">' + d.phase + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">楼栋</span><span class="house-info-value">' + d.building + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">单元</span><span class="house-info-value">' + d.unit + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">层数</span><span class="house-info-value">' + d.floor + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">房号</span><span class="house-info-value">' + d.room + '</span></div>';
+            html += '</div>';
+
+            html += '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">';
+            html += '<button class="btn btn-warning btn-sm" onclick="startModify()">修改认证</button>';
+            html += '<button class="btn btn-danger btn-sm" onclick="openModal(\'unbindModal\')">解绑房屋</button>';
+            html += '</div>';
+            html += '</div>';
+
+            html += '<div class="tabs">';
+            html += '<button class="tab-item' + (tab === 'members' ? ' active' : '') + '" onclick="switchMemberTab(\'members\')">同住成员</button>';
+            html += '<button class="tab-item' + (tab === 'gold' ? ' active' : '') + '" onclick="switchMemberTab(\'gold\')">物业金</button>';
+            html += '</div>';
+
+            if (tab === 'members') {
+                html += renderMembersContent();
+            } else {
+                html += renderGoldContent();
+            }
+
+            document.getElementById('pageContent').innerHTML = html;
+        }
+
+        function renderMembersContent() {
+            var html = '<div class="section-card">';
+            html += '<div class="section-title">同住成员</div>';
+            html += '<div class="section-subtitle">' + authenticatedHouseData.community + ' ' + authenticatedHouseData.building + ' ' + authenticatedHouseData.room + '</div>';
+
+            for (var i = 0; i < members.length; i++) {
+                var m = members[i];
+                var tagClass = m.tag === 'owner' ? 'tag-owner' : (m.tag === 'family' ? 'tag-family' : 'tag-tenant');
+                var tagLabel = m.tag === 'owner' ? '户主' : (m.tag === 'family' ? '家庭成员' : '租客');
+                html += '<div class="member-list-item">';
+                html += '<div class="member-avatar">' + m.name[0] + '</div>';
+                html += '<div class="member-info"><div class="member-name">' + m.name + '</div><div class="member-role">' + (m.phone || '未绑定手机') + '</div></div>';
+                html += '<span class="member-tag ' + tagClass + '">' + tagLabel + '</span>';
+                html += '</div>';
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        function renderGoldContent() {
+            var html = '';
+
+            html += '<div class="property-gold-card">';
+            html += '<div class="gold-amount" id="goldAmount">¥142.27</div>';
+            html += '<div class="gold-label">' + authenticatedHouseData.community + ' ' + authenticatedHouseData.room + ' · 可用物业金</div>';
+            html += '</div>';
+
+            html += '<div class="section-card">';
+            html += '<div class="section-title">物业金明细</div>';
+            html += '<div class="section-subtitle">近30天变动记录</div>';
+
+            for (var i = 0; i < goldDetails.length; i++) {
+                var g = goldDetails[i];
+                var cls = g.type === 'plus' ? 'gold-plus' : 'gold-minus';
+                html += '<div class="gold-detail-item">';
+                html += '<div><div>' + g.desc + '</div><div class="gold-detail-time">' + g.time + '</div></div>';
+                html += '<div class="gold-detail-amount ' + cls + '">' + g.amount + '</div>';
+                html += '</div>';
+            }
+            html += '</div>';
+
+            return html;
+        }
+
+        function switchMemberTab(tab) {
+            window._memberTab = tab;
+            renderAuthenticatedPage();
+        }
+
+        function startModify() {
+            currentState = 'modifying';
+            pickerValues = JSON.parse(JSON.stringify(authenticatedHouseData));
+            renderAuthPage(true);
+        }
+
+        function confirmUnbind() {
+            closeModal('unbindModal');
+            authenticatedHouseData = null;
+            currentState = 'unauthenticated';
+            pickerValues = {
+                community: '',
+                phase: '',
+                building: '',
+                unit: '',
+                floor: '',
+                room: '',
+                note: ''
+            };
+            window._memberTab = 'members';
+            renderAuthPage(false);
+            showToast('解绑成功');
+        }
+
+        function switchState(state) {
+            currentState = state;
+            if (state === 'authenticated') {
+                pickerValues = JSON.parse(JSON.stringify(authenticatedHouseData));
+                renderAuthenticatedPage();
+            } else if (state === 'unauthenticated') {
+                pickerValues = {
+                    community: '',
+                    phase: '',
+                    building: '',
+                    unit: '',
+                    floor: '',
+                    room: '',
+                    note: ''
+                };
+                renderAuthPage(false);
+            }
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('show');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+
+        function showToast(msg) {
+            var t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(function() { t.classList.remove('show'); }, 1800);
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(function(m) {
+            m.addEventListener('click', function(e) {
+                if (e.target === m) closeModal(m.id);
+            });
+        });
+
+        renderAuthPage(false);
+    </script>
+</body>
+</html>

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>认证审核 - 多商户电商系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 { font-size: 20px; font-weight: 600; }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+
+        .sidebar {
+            width: 220px;
+            background: #2c3e50;
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-menu { list-style: none; }
+
+        .sidebar-menu-item {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-menu-item > .menu-title {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .sidebar-menu-item > .menu-title:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .sidebar-menu-item.active > .menu-title {
+            background: rgba(255,255,255,0.15);
+            border-left: 3px solid #667eea;
+        }
+
+        .sidebar-submenu {
+            list-style: none;
+            background: rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .sidebar-submenu.show { display: block; }
+
+        .sidebar-submenu li {
+            padding: 12px 20px 12px 50px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+
+        .sidebar-submenu li:hover { background: rgba(255,255,255,0.1); }
+
+        .sidebar-submenu li.active {
+            background: rgba(255,255,255,0.15);
+            color: #667eea;
+        }
+
+        .sidebar-submenu li a {
+            color: inherit;
+            text-decoration: none;
+            display: block;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            max-width: 320px;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .search-input:focus { outline: none; border-color: #667eea; }
+
+        .status-filter {
+            padding: 10px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .status-filter:focus { outline: none; border-color: #667eea; }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover { background: #5a6fd6; }
+
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-header h2 { font-size: 15px; color: #333; }
+
+        .table-header .count {
+            font-size: 13px;
+            color: #999;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px 20px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 1px solid #eee;
+        }
+
+        td {
+            padding: 14px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        tr:hover { background: #fafafa; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-approve {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .btn-approve:hover { background: #a7f3d0; }
+
+        .btn-reject {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-reject:hover { background: #fecaca; }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            gap: 8px;
+        }
+
+        .page-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: #f0f0f0;
+            border-color: #667eea;
+        }
+
+        .page-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 13px;
+            color: #999;
+            margin: 0 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #bbb;
+        }
+
+        .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-dialog {
+            background: white;
+            border-radius: 12px;
+            width: 400px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .modal-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .modal-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .modal-info .label { color: #999; display: inline-block; width: 80px; }
+        .modal-info .value { color: #333; }
+
+        .modal-textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+            margin-bottom: 16px;
+        }
+
+        .modal-textarea:focus { outline: none; border-color: #667eea; }
+
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-btns .btn { flex: 1; padding: 12px; }
+
+        .toast {
+            position: fixed;
+            top: 80px; right: 30px;
+            background: rgba(0,0,0,0.78);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 2000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; }
+            .main-container { flex-direction: column; }
+            .search-bar { flex-direction: column; align-items: stretch; }
+            .search-input { max-width: 100%; }
+            .table-container { overflow-x: auto; }
+            .action-btns { flex-direction: column; }
+            .modal-dialog { width: 90%; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>认证审核</h1>
+    </header>
+
+    <div class="main-container">
+        <nav class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item active">
+                    <div class="menu-title" onclick="toggleSubmenu(this)">
+                        <span>🏠</span>
+                        <span>物业</span>
+                        <span style="margin-left: auto;">▼</span>
+                    </div>
+                    <ul class="sidebar-submenu show">
+                        <li><a href="house-info.html">房屋信息</a></li>
+                        <li><a href="property-gold.html">物业金管理</a></li>
+                        <li class="active"><a href="auth-review.html">认证审核</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <div class="search-bar">
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索申请人昵称、手机号、房屋信息..." onkeyup="handleSearch">
+                <select class="status-filter" id="statusFilter">
+                    <option value="">全部状态</option>
+                    <option value="pending">待审核</option>
+                    <option value="approved">已通过</option>
+                    <option value="rejected">已拒绝</option>
+                </select>
+                <button class="btn btn-primary" onclick="performSearch()">搜索</button>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <h2>认证申请列表</h2>
+                    <span class="count">共 <span id="totalCount">0</span> 条记录</span>
+                </div>
+                <table id="reviewTable">
+                    <thead>
+                        <tr>
+                            <th>申请人昵称</th>
+                            <th>手机号</th>
+                            <th>申请房屋信息</th>
+                            <th>申请备注</th>
+                            <th>申请时间</th>
+                            <th>审核状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+                <div class="pagination" id="pagination"></div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-dialog">
+            <div class="modal-title">申请详情</div>
+            <div class="modal-info" id="modalInfo"></div>
+            <textarea class="modal-textarea" id="reviewNote" placeholder="请输入审核意见（拒绝时必填）"></textarea>
+            <div class="modal-btns">
+                <button class="btn" style="background:#fff;border:1px solid #ddd;color:#666;" onclick="closeModal('detailModal')">关闭</button>
+                <button class="btn" style="background:#ef4444;color:white;" onclick="rejectApplication()">拒绝</button>
+                <button class="btn" style="background:#059669;color:white;" onclick="approveApplication()">通过</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var currentPage = 1;
+        var pageSize = 10;
+        var totalPages = 1;
+        var currentSearch = '';
+        var currentStatus = '';
+        var selectedRecord = null;
+
+        var mockData = [
+            { id: 1, nickname: '张三', phone: '138****1234', community: '阳光花园', phase: '二期', building: '3栋', unit: '2单元', floor: '12层', room: '1203号', note: '我是业主，房产证编号：F-2024001', applyTime: '2026-05-30 14:30', status: 'pending' },
+            { id: 2, nickname: '李四', phone: '139****5678', community: '翡翠湾', phase: '一期', building: '5栋', unit: '1单元', floor: '8层', room: '802号', note: '住户认证', applyTime: '2026-05-30 11:20', status: 'pending' },
+            { id: 3, nickname: '王五', phone: '185****9012', community: '碧桂园', phase: '三期', building: '2栋', unit: '3单元', floor: '20层', room: '2001号', note: '新入住租户', applyTime: '2026-05-29 16:45', status: 'pending' },
+            { id: 4, nickname: '赵六', phone: '136****3456', community: '阳光花园', phase: '一期', building: '1栋', unit: '2单元', floor: '5层', room: '501号', note: '', applyTime: '2026-05-29 09:15', status: 'approved' },
+            { id: 5, nickname: '孙七', phone: '158****7890', community: '绿城玫瑰园', phase: '一期', building: '4栋', unit: '1单元', floor: '15层', room: '1504号', note: '业主认证', applyTime: '2026-05-28 15:30', status: 'approved' },
+            { id: 6, nickname: '周八', phone: '137****2345', community: '翡翠湾', phase: '二期', building: '3栋', unit: '2单元', floor: '10层', room: '1003号', note: '申请材料不全', applyTime: '2026-05-28 10:00', status: 'rejected' },
+            { id: 7, nickname: '吴九', phone: '135****6789', community: '碧桂园', phase: '二期', building: '6栋', unit: '1单元', floor: '3层', room: '302号', note: '', applyTime: '2026-05-27 14:20', status: 'approved' },
+            { id: 8, nickname: '郑十', phone: '186****0123', community: '阳光花园', phase: '三期', building: '2栋', unit: '1单元', floor: '18层', room: '1805号', note: '租户认证，合同编号HT-202605', applyTime: '2026-05-27 11:00', status: 'pending' },
+            { id: 9, nickname: '钱十一', phone: '133****4567', community: '绿城玫瑰园', phase: '二期', building: '1栋', unit: '3单元', floor: '7层', room: '701号', note: '', applyTime: '2026-05-26 16:30', status: 'rejected' },
+            { id: 10, nickname: '刘十二', phone: '159****8901', community: '阳光花园', phase: '一期', building: '4栋', unit: '2单元', floor: '11层', room: '1102号', note: '业主变更申请', applyTime: '2026-05-26 09:45', status: 'approved' },
+            { id: 11, nickname: '陈十三', phone: '134****2345', community: '翡翠湾', phase: '三期', building: '2栋', unit: '1单元', floor: '6层', room: '601号', note: '', applyTime: '2026-05-25 15:00', status: 'pending' },
+            { id: 12, nickname: '林十四', phone: '188****5678', community: '碧桂园', phase: '一期', building: '3栋', unit: '2单元', floor: '14层', room: '1403号', note: '新购房认证', applyTime: '2026-05-25 10:30', status: 'approved' }
+        ];
+
+        function toggleSubmenu(el) {
+            el.parentElement.classList.toggle('active');
+            el.nextElementSibling.classList.toggle('show');
+            el.querySelector('span:last-child').textContent = el.nextElementSibling.classList.contains('show') ? '▼' : '▶';
+        }
+
+        function getStatusText(status) {
+            var map = { 'pending': '待审核', 'approved': '已通过', 'rejected': '已拒绝' };
+            return map[status] || status;
+        }
+
+        function getStatusClass(status) {
+            var map = { 'pending': 'status-pending', 'approved': 'status-approved', 'rejected': 'status-rejected' };
+            return map[status] || '';
+        }
+
+        function renderTable(data) {
+            var tbody = document.getElementById('tableBody');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="empty-icon">📋</div>暂无数据</td></tr>';
+                return;
+            }
+
+            var html = '';
+            for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                var houseInfo = item.community + ' - ' + item.phase + ' - ' + item.building + ' - ' + item.unit + ' - ' + item.floor + ' - ' + item.room;
+                html += '<tr>';
+                html += '<td>' + item.nickname + '</td>';
+                html += '<td>' + item.phone + '</td>';
+                html += '<td style="max-width:200px;word-break:break-all;">' + houseInfo + '</td>';
+                html += '<td style="max-width:150px;word-break:break-all;">' + (item.note || '-') + '</td>';
+                html += '<td>' + item.applyTime + '</td>';
+                html += '<td><span class="status-badge ' + getStatusClass(item.status) + '">' + getStatusText(item.status) + '</span></td>';
+                html += '<td>';
+                if (item.status === 'pending') {
+                    html += '<div class="action-btns">';
+                    html += '<button class="action-btn btn-approve" onclick="openDetail(' + item.id + ', true)">通过</button>';
+                    html += '<button class="action-btn btn-reject" onclick="openDetail(' + item.id + ', false)">拒绝</button>';
+                    html += '</div>';
+                } else {
+                    html += '<button class="action-btn" style="background:#f0f0f0;color:#666;" onclick="openDetail(' + item.id + ', null)">查看</button>';
+                }
+                html += '</td>';
+                html += '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+
+        function renderPagination(total) {
+            totalPages = Math.ceil(total / pageSize);
+            var pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            var html = '';
+            html += '<button class="page-btn" onclick="goPage(' + (currentPage - 1) + ')" ' + (currentPage <= 1 ? 'disabled' : '') + '>上一页</button>';
+            
+            for (var i = 1; i <= totalPages; i++) {
+                var active = i === currentPage ? 'active' : '';
+                html += '<button class="page-btn ' + active + '" onclick="goPage(' + i + ')">' + i + '</button>';
+            }
+            
+            html += '<button class="page-btn" onclick="goPage(' + (currentPage + 1) + ')" ' + (currentPage >= totalPages ? 'disabled' : '') + '>下一页</button>';
+            html += '<span class="page-info">第 ' + currentPage + ' / ' + totalPages + ' 页</span>';
+            
+            pagination.innerHTML = html;
+        }
+
+        function filterData() {
+            var filtered = mockData.filter(function(item) {
+                var matchSearch = true;
+                if (currentSearch) {
+                    var searchLower = currentSearch.toLowerCase();
+                    matchSearch = item.nickname.toLowerCase().includes(searchLower) ||
+                                  item.phone.includes(currentSearch) ||
+                                  item.community.toLowerCase().includes(searchLower) ||
+                                  item.building.includes(currentSearch) ||
+                                  item.room.includes(currentSearch);
+                }
+                
+                var matchStatus = true;
+                if (currentStatus) {
+                    matchStatus = item.status === currentStatus;
+                }
+                
+                return matchSearch && matchStatus;
+            });
+            
+            document.getElementById('totalCount').textContent = filtered.length;
+            
+            var start = (currentPage - 1) * pageSize;
+            var end = start + pageSize;
+            var pageData = filtered.slice(start, end);
+            
+            renderTable(pageData);
+            renderPagination(filtered.length);
+        }
+
+        function goPage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            filterData();
+        }
+
+        function performSearch() {
+            currentSearch = document.getElementById('searchInput').value.trim();
+            currentStatus = document.getElementById('statusFilter').value;
+            currentPage = 1;
+            filterData();
+        }
+
+        function handleSearch(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        function openDetail(id, isApprove) {
+            selectedRecord = mockData.find(function(item) { return item.id === id; });
+            if (!selectedRecord) return;
+
+            var info = '';
+            info += '<p><span class="label">申请人：</span><span class="value">' + selectedRecord.nickname + '</span></p>';
+            info += '<p><span class="label">手机号：</span><span class="value">' + selectedRecord.phone + '</span></p>';
+            info += '<p><span class="label">小区：</span><span class="value">' + selectedRecord.community + '</span></p>';
+            info += '<p><span class="label">期数：</span><span class="value">' + selectedRecord.phase + '</span></p>';
+            info += '<p><span class="label">楼栋：</span><span class="value">' + selectedRecord.building + '</span></p>';
+            info += '<p><span class="label">单元：</span><span class="value">' + selectedRecord.unit + '</span></p>';
+            info += '<p><span class="label">楼层：</span><span class="value">' + selectedRecord.floor + '</span></p>';
+            info += '<p><span class="label">房号：</span><span class="value">' + selectedRecord.room + '</span></p>';
+            info += '<p><span class="label">申请备注：</span><span class="value">' + (selectedRecord.note || '无') + '</span></p>';
+            info += '<p><span class="label">申请时间：</span><span class="value">' + selectedRecord.applyTime + '</span></p>';
+            info += '<p><span class="label">当前状态：</span><span class="value"><span class="status-badge ' + getStatusClass(selectedRecord.status) + '">' + getStatusText(selectedRecord.status) + '</span></span></p>';
+
+            document.getElementById('modalInfo').innerHTML = info;
+            document.getElementById('reviewNote').value = '';
+            document.getElementById('detailModal').classList.add('show');
+
+            window._isApprove = isApprove;
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+            selectedRecord = null;
+        }
+
+        function approveApplication() {
+            if (!selectedRecord) return;
+            selectedRecord.status = 'approved';
+            closeModal('detailModal');
+            filterData();
+            showToast('审核通过成功');
+        }
+
+        function rejectApplication() {
+            if (!selectedRecord) return;
+            var note = document.getElementById('reviewNote').value.trim();
+            if (!note) {
+                showToast('请填写拒绝理由');
+                return;
+            }
+            selectedRecord.status = 'rejected';
+            closeModal('detailModal');
+            filterData();
+            showToast('已拒绝申请');
+        }
+
+        function showToast(msg) {
+            var t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(function() { t.classList.remove('show'); }, 2000);
+        }
+
+        document.getElementById('searchInput').addEventListener('keyup', handleSearch);
+        document.getElementById('statusFilter').addEventListener('change', performSearch);
+        
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal('detailModal');
+        });
+
+        filterData();
+    </script>
+</body>
+</html>
