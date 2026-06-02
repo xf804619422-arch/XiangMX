@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>店铺主页 - 微信小程序</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #e8ecf1;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+
+        .phone-frame {
+            width: 420px;
+            min-height: 780px;
+            background: #f5f6f8;
+            border-radius: 32px;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            font-size: 12px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .status-bar .time { font-size: 13px; }
+        .status-bar .icons { display: flex; gap: 6px; align-items: center; }
+
+        .nav-bar {
+            height: 48px;
+            background: white;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .nav-back {
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            font-size: 16px;
+            color: #333;
+            flex-shrink: 0;
+        }
+
+        .nav-back:hover { background: #f0f0f0; }
+
+        .search-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: #f5f6f8;
+            border-radius: 20px;
+            padding: 0 14px;
+            height: 34px;
+            gap: 8px;
+        }
+
+        .search-container .search-icon {
+            font-size: 14px;
+            color: #999;
+            flex-shrink: 0;
+        }
+
+        .search-container input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            color: #333;
+            outline: none;
+        }
+
+        .search-container input::placeholder { color: #bbb; }
+
+        .search-clear {
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            background: #ccc;
+            color: white;
+            font-size: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .search-clear.show { display: flex; }
+
+        .search-cancel {
+            font-size: 13px;
+            color: #667eea;
+            cursor: pointer;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .search-cancel.show { display: block; }
+
+        .main-content {
+            height: calc(780px - 92px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .store-header {
+            background: white;
+            padding: 24px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .store-logo {
+            width: 68px; height: 68px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+        }
+
+        .store-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .store-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .store-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .store-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: #ddd; }
+
+        .favorite-btn {
+            width: 72px; height: 36px;
+            border-radius: 18px;
+            border: 1px solid #667eea;
+            background: white;
+            color: #667eea;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .favorite-btn:hover { background: #f0f3ff; }
+
+        .favorite-btn.liked {
+            background: #667eea;
+            color: white;
+        }
+
+        .favorite-toast {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(0,0,0,0.75);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+        }
+
+        .favorite-toast.show { transform: translate(-50%, -50%) scale(1); }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            padding: 16px 20px 8px;
+        }
+
+        .coupon-scroll {
+            display: flex;
+            gap: 10px;
+            padding: 0 20px 16px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .coupon-scroll::-webkit-scrollbar { display: none; }
+
+        .coupon-card {
+            min-width: 240px;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: white;
+            border: 1px solid #eee;
+        }
+
+        .coupon-card:active { transform: scale(0.97); }
+
+        .coupon-card .coupon-type-tag {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+            align-self: flex-start;
+        }
+
+        .coupon-type-general { background: #e8f4fd; color: #3b82f6; }
+        .coupon-type-product { background: #fef3e2; color: #f59e0b; }
+
+        .coupon-card .coupon-main {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .coupon-card .coupon-amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #e53e3e;
+            line-height: 1;
+        }
+
+        .coupon-card .coupon-amount .unit { font-size: 16px; }
+
+        .coupon-card .coupon-condition {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .coupon-card .coupon-rule {
+            font-size: 11px;
+            color: #999;
+            background: #fafbfc;
+            padding: 6px 10px;
+            border-radius: 6px;
+            line-height: 1.5;
+        }
+
+        .coupon-card .coupon-rule .rule-icon {
+            color: #f59e0b;
+            margin-right: 4px;
+        }
+
+        .coupon-card .coupon-get-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .coupon-card .coupon-get-btn.received {
+            background: #ccc;
+            cursor: default;
+        }
+
+        .category-tabs {
+            display: flex;
+            background: white;
+            padding: 0 4px;
+            gap: 0;
+            border-bottom: 1px solid #f0f0f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .category-tabs::-webkit-scrollbar { display: none; }
+
+        .category-tab {
+            padding: 14px 16px;
+            font-size: 13px;
+            color: #999;
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+
+        .category-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+
+        .product-list {
+            padding: 12px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 30px;
+        }
+
+        .product-item {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            gap: 12px;
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+        }
+
+        .product-item:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+        .product-item-img {
+            width: 100px; height: 100px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f5f7fa, #e4e8ed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .product-item-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-width: 0;
+        }
+
+        .product-item-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-item-tags {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .product-tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .tag-hot { background: #fff0f0; color: #e53e3e; }
+        .tag-new { background: #f0fff4; color: #38a169; }
+        .tag-recommend { background: #fef3e2; color: #dd6b20; }
+
+        .product-item-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .product-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #e53e3e;
+        }
+
+        .product-price .unit { font-size: 12px; }
+
+        .product-original-price {
+            font-size: 12px;
+            color: #bbb;
+            text-decoration: line-through;
+            margin-left: 6px;
+        }
+
+        .product-sold {
+            font-size: 11px;
+            color: #bbb;
+        }
+
+        .empty-search {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .empty-search .empty-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 460px) {
+            .phone-frame {
+                width: 100%;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+            body { padding: 0; }
+            .main-content { height: calc(100vh - 92px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame" style="position: relative;">
+        <div class="favorite-toast" id="favoriteToast"></div>
+
+        <div class="status-bar">
+            <span class="time">9:41</span>
+            <span class="icons">
+                <span style="font-size:10px;">●●●●○</span>
+                <span style="font-size:11px;">WiFi</span>
+                <span style="font-size:11px;">▮▮▮</span>
+            </span>
+        </div>
+
+        <div class="nav-bar">
+            <div class="nav-back" onclick="history.back()" title="返回">&#x2039;</div>
+            <div class="search-container" id="searchContainer">
+                <span class="search-icon">&#x2315;</span>
+                <input type="text" id="searchInput" placeholder="搜索店铺内商品" oninput="onSearchInput()">
+                <span class="search-clear" id="searchClear" onclick="clearSearch()">&#x2715;</span>
+            </div>
+            <span class="search-cancel" id="searchCancel" onclick="cancelSearch()">取消</span>
+        </div>
+
+        <div class="main-content">
+            <div class="store-header">
+                <div class="store-logo">H</div>
+                <div class="store-info">
+                    <div class="store-name">华为官方旗舰店</div>
+                    <div class="store-meta">
+                        <span>粉丝 126万</span>
+                    </div>
+                </div>
+                <button class="favorite-btn" id="favoriteBtn" onclick="toggleFavorite()">
+                    <span id="favoriteIcon">&#x2661;</span> 收藏
+                </button>
+            </div>
+
+            <div class="section-title">店铺优惠</div>
+            <div class="coupon-scroll">
+                <div class="coupon-card" onclick="getCoupon(this, '满200减30')">
+                    <span class="coupon-type-tag coupon-type-general">通用券</span>
+                    <div class="coupon-main">
+                        <span class="coupon-amount"><span class="unit">&#165;</span>30</span>
+                        <span class="coupon-condition">满200可用</span>
+                    </div>
+                    <div class="coupon-rule"><span class="rule-icon">&#9432;</span>全场通用，不限商品品类</div>
+                    <button class="coupon-get-btn">领取</button>
+                </div>
+                <div class="coupon-card" onclick="getCoupon(this, '满500减80')">
+                    <span class="coupon-type-tag coupon-type-general">通用券</span>
+                    <div class="coupon-main">
+                        <span class="coupon-amount"><span class="unit">&#165;</span>80</span>
+                        <span class="coupon-condition">满500可用</span>
+                    </div>
+                    <div class="coupon-rule"><span class="rule-icon">&#9432;</span>全场通用，不限商品品类</div>
+                    <button class="coupon-get-btn">领取</button>
+                </div>
+                <div class="coupon-card" onclick="getCoupon(this, '手机满1000减150')">
+                    <span class="coupon-type-tag coupon-type-product">商品券</span>
+                    <div class="coupon-main">
+                        <span class="coupon-amount"><span class="unit">&#165;</span>150</span>
+                        <span class="coupon-condition">满1000可用</span>
+                    </div>
+                    <div class="coupon-rule"><span class="rule-icon">&#9432;</span>仅限手机品类商品可用</div>
+                    <button class="coupon-get-btn">领取</button>
+                </div>
+                <div class="coupon-card" onclick="getCoupon(this, '穿戴设备9折券')">
+                    <span class="coupon-type-tag coupon-type-product">商品券</span>
+                    <div class="coupon-main">
+                        <span class="coupon-amount">9<span class="unit">折</span></span>
+                        <span class="coupon-condition">最高减200</span>
+                    </div>
+                    <div class="coupon-rule"><span class="rule-icon">&#9432;</span>仅限智能穿戴品类商品可用</div>
+                    <button class="coupon-get-btn">领取</button>
+                </div>
+            </div>
+
+            <div class="category-tabs" id="categoryTabs">
+                <button class="category-tab active" data-category="all" onclick="switchCategory('all', this)">全部</button>
+                <button class="category-tab" data-category="phone" onclick="switchCategory('phone', this)">手机</button>
+                <button class="category-tab" data-category="laptop" onclick="switchCategory('laptop', this)">笔记本</button>
+                <button class="category-tab" data-category="wearable" onclick="switchCategory('wearable', this)">智能穿戴</button>
+                <button class="category-tab" data-category="accessory" onclick="switchCategory('accessory', this)">配件</button>
+                <button class="category-tab" data-category="tablet" onclick="switchCategory('tablet', this)">平板</button>
+            </div>
+
+            <div class="product-list" id="productList"></div>
+
+            <div class="empty-search" id="emptySearch" style="display:none;">
+                <div class="empty-icon">&#x2315;</div>
+                <div>未找到相关商品</div>
+                <div style="font-size:12px; margin-top:4px; color:#ccc;">换个关键词试试吧</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var products = [
+            { id: 1, name: 'HUAWEI Mate 60 Pro 昆仑玻璃 12GB+512GB', price: 6999, originalPrice: 7999, sold: 28900, img: '📱', category: 'phone', tags: ['hot', 'recommend'] },
+            { id: 2, name: 'HUAWEI Pura 70 Ultra 伸缩摄像头 16GB+512GB', price: 9999, originalPrice: 10999, sold: 15200, img: '📱', category: 'phone', tags: ['new'] },
+            { id: 3, name: 'HUAWEI MateBook X Pro 微绒典藏版 Ultra9 32GB+2TB', price: 14999, originalPrice: 15999, sold: 8600, img: '💻', category: 'laptop', tags: ['recommend'] },
+            { id: 4, name: 'HUAWEI MateBook 14 酷睿Ultra 16GB+1TB 触屏版', price: 6999, originalPrice: 7499, sold: 12300, img: '💻', category: 'laptop', tags: ['hot'] },
+            { id: 5, name: 'HUAWEI WATCH GT 4 46mm 云杉绿 智能手表', price: 1999, originalPrice: 2199, sold: 32100, img: '⌚', category: 'wearable', tags: ['hot', 'recommend'] },
+            { id: 6, name: 'HUAWEI WATCH Ultimate 非凡大师 黄金版', price: 5999, originalPrice: 6599, sold: 4800, img: '⌚', category: 'wearable', tags: ['new'] },
+            { id: 7, name: 'HUAWEI FreeBuds Pro 3 星河蓝 降噪耳机', price: 1499, originalPrice: 1699, sold: 45800, img: '🎧', category: 'accessory', tags: ['hot'] },
+            { id: 8, name: 'HUAWEI 超级快充 66W 充电器套装', price: 299, originalPrice: 349, sold: 67200, img: '🔌', category: 'accessory', tags: [] },
+            { id: 9, name: 'HUAWEI MatePad Pro 13.2 OLED 12GB+512GB', price: 5499, originalPrice: 5999, sold: 18500, img: '📋', category: 'tablet', tags: ['recommend'] },
+            { id: 10, name: 'HUAWEI MatePad Air 11.5 柔光版 8GB+256GB', price: 2699, originalPrice: 2999, sold: 23400, img: '📋', category: 'tablet', tags: ['hot'] },
+            { id: 11, name: 'HUAWEI Mate 60 RS 非凡大师 16GB+1TB', price: 12999, originalPrice: 13999, sold: 6200, img: '📱', category: 'phone', tags: ['new', 'recommend'] },
+            { id: 12, name: 'HUAWEI MateBook 16s 酷睿i9 32GB+1TB', price: 9999, originalPrice: 10999, sold: 9500, img: '💻', category: 'laptop', tags: [] },
+            { id: 13, name: 'HUAWEI Band 9 智能手环 NFC版', price: 299, originalPrice: 349, sold: 89100, img: '⌚', category: 'wearable', tags: ['hot'] },
+            { id: 14, name: 'HUAWEI FreeClip 开放式耳机 流光紫', price: 1299, originalPrice: 1399, sold: 12500, img: '🎧', category: 'accessory', tags: ['new'] },
+            { id: 15, name: 'HUAWEI MatePad 11.5 SE 护眼学习教育平板', price: 1499, originalPrice: 1699, sold: 34700, img: '📋', category: 'tablet', tags: ['hot'] }
+        ];
+
+        var currentCategory = 'all';
+        var searchKeyword = '';
+        var isFavorited = false;
+
+        function tagLabels(tags) {
+            var map = { hot: { cls: 'tag-hot', text: '热销' }, new: { cls: 'tag-new', text: '新品' }, recommend: { cls: 'tag-recommend', text: '推荐' } };
+            return tags.map(function(t) {
+                return '<span class="product-tag ' + map[t].cls + '">' + map[t].text + '</span>';
+            }).join('');
+        }
+
+        function renderProducts(data) {
+            var container = document.getElementById('productList');
+            var empty = document.getElementById('emptySearch');
+
+            if (data.length === 0) {
+                container.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            container.innerHTML = data.map(function(p) {
+                return '<div class="product-item">' +
+                    '<div class="product-item-img">' + p.img + '</div>' +
+                    '<div class="product-item-info">' +
+                        '<div>' +
+                            '<div class="product-item-name">' + highlightName(p.name) + '</div>' +
+                            (p.tags.length > 0 ? '<div class="product-item-tags">' + tagLabels(p.tags) + '</div>' : '') +
+                        '</div>' +
+                        '<div class="product-item-bottom">' +
+                            '<div>' +
+                                '<span class="product-price"><span class="unit">&#165;</span>' + p.price.toLocaleString() + '</span>' +
+                                '<span class="product-original-price">&#165;' + p.originalPrice.toLocaleString() + '</span>' +
+                            '</div>' +
+                            '<span class="product-sold">已售 ' + (p.sold >= 10000 ? (p.sold / 10000).toFixed(1) + '万' : p.sold) + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        function highlightName(name) {
+            if (!searchKeyword) return name;
+            var re = new RegExp('(' + searchKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+            return name.replace(re, '<span style="color:#e53e3e;font-weight:600;">$1</span>');
+        }
+
+        function getFilteredProducts() {
+            var filtered = products;
+            if (currentCategory !== 'all') {
+                filtered = filtered.filter(function(p) { return p.category === currentCategory; });
+            }
+            if (searchKeyword) {
+                var kw = searchKeyword.toLowerCase();
+                filtered = filtered.filter(function(p) { return p.name.toLowerCase().indexOf(kw) !== -1; });
+            }
+            return filtered;
+        }
+
+        function switchCategory(cat, btn) {
+            currentCategory = cat;
+            document.querySelectorAll('.category-tab').forEach(function(t) { t.classList.remove('active'); });
+            btn.classList.add('active');
+            renderProducts(getFilteredProducts());
+        }
+
+        function onSearchInput() {
+            var input = document.getElementById('searchInput');
+            var clear = document.getElementById('searchClear');
+            var cancel = document.getElementById('searchCancel');
+            searchKeyword = input.value.trim();
+
+            if (searchKeyword) {
+                clear.classList.add('show');
+                cancel.classList.add('show');
+            } else {
+                clear.classList.remove('show');
+                cancel.classList.remove('show');
+            }
+
+            renderProducts(getFilteredProducts());
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            searchKeyword = '';
+            document.getElementById('searchClear').classList.remove('show');
+            document.getElementById('searchCancel').classList.remove('show');
+            renderProducts(getFilteredProducts());
+        }
+
+        function cancelSearch() {
+            clearSearch();
+        }
+
+        function toggleFavorite() {
+            isFavorited = !isFavorited;
+            var btn = document.getElementById('favoriteBtn');
+            var icon = document.getElementById('favoriteIcon');
+            var toast = document.getElementById('favoriteToast');
+
+            if (isFavorited) {
+                btn.classList.add('liked');
+                icon.innerHTML = '&#x2665;';
+                btn.innerHTML = '<span id="favoriteIcon">&#x2665;</span> 已收藏';
+                toast.textContent = '已收藏该店铺';
+            } else {
+                btn.classList.remove('liked');
+                icon.innerHTML = '&#x2661;';
+                btn.innerHTML = '<span id="favoriteIcon">&#x2661;</span> 收藏';
+                toast.textContent = '已取消收藏';
+            }
+
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 1500);
+        }
+
+        function getCoupon(el, name) {
+            el.style.opacity = '0.6';
+            var btn = el.querySelector('.coupon-get-btn');
+            btn.textContent = '已领';
+            btn.classList.add('received');
+
+            var toast = document.getElementById('favoriteToast');
+            toast.textContent = '已领取 ' + name;
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 1500);
+        }
+
+        renderProducts(products);
+    </script>
+</body>
+</html>

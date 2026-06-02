@@ -1,4 +1,4 @@
-﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -859,9 +859,14 @@
         </nav>
         <aside class="tree-section">
             <div class="tree-header">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <h2>📍 房屋层级结构</h2>
-                    <button onclick="openAddCommunityModal()" style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 13px; cursor: pointer;">➕ 添加小区</button>
+                <div style="display: flex; flex-direction: column; margin-bottom: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h2 style="margin:0;">📍 房屋层级结构</h2>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <button onclick="openAddCommunityModal()" style="padding: 4px 10px; background: #10b981; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">➕ 添加小区</button>
+                        <button onclick="openImportModal()" style="padding: 4px 10px; background: #667eea; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">📥 导入住户</button>
+                    </div>
                 </div>
                 <div class="tree-search">
                     <input type="text" placeholder="搜索小区/楼栋/房号..." id="searchInput">
@@ -1351,6 +1356,38 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="importModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>📥 导入住户信息</h3>
+                <button class="modal-close" onclick="closeImportModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:13px;color:#999;margin-bottom:16px;">请先下载导入模板，按模板格式填写住户信息后上传文件</p>
+                <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:16px;margin-bottom:16px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div>
+                            <div style="font-size:14px;font-weight:500;color:#333;">导入模板文件</div>
+                            <div style="font-size:12px;color:#999;margin-top:4px;">模板字段：用户手机号、住户姓名、小区名称、期数、楼栋、单元、楼层、房号</div>
+                        </div>
+                        <button class="btn" style="background:#fff;border:1px solid #ddd;color:#333;white-space:nowrap;" onclick="downloadTemplate()">⬇ 下载模板</button>
+                    </div>
+                </div>
+                <div style="border:2px dashed #ddd;border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:border-color 0.2s;" id="uploadZone" onclick="document.getElementById('importFile').click()" onmouseover="this.style.borderColor='#667eea'" onmouseout="this.style.borderColor='#ddd'">
+                    <div style="font-size:36px;margin-bottom:8px;color:#ccc;">📁</div>
+                    <div style="font-size:14px;color:#666;" id="uploadText">点击选择文件或拖拽到此处</div>
+                    <div style="font-size:12px;color:#bbb;margin-top:4px;">支持 .xlsx、.csv 格式文件</div>
+                    <input type="file" id="importFile" accept=".xlsx,.csv" style="display:none;" onchange="handleFileSelect(event)">
+                </div>
+                <div id="importResult" style="display:none;margin-top:16px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeImportModal()">关闭</button>
+                <button class="btn btn-primary" id="importSubmitBtn" disabled onclick="submitImport()">开始导入</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const mockResidents = {
             'r101': [
@@ -1798,6 +1835,98 @@
             }
             alert('删除成功！');
         }
+
+        function openImportModal() {
+            document.getElementById('importModal').classList.add('show');
+            document.getElementById('importFile').value = '';
+            document.getElementById('uploadText').textContent = '点击选择文件或拖拽到此处';
+            document.getElementById('importSubmitBtn').disabled = true;
+            document.getElementById('importResult').style.display = 'none';
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('show');
+        }
+
+        function downloadTemplate() {
+            var csvContent = '\uFEFF用户手机号,住户姓名,小区名称,期数,楼栋,单元,楼层,房号\n';
+            csvContent += '13800000001,示例姓名,阳光花园,一期,1栋,1单元,1层,101号\n';
+
+            var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = '住户导入模板.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function handleFileSelect(e) {
+            var file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('uploadText').textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+            document.getElementById('importSubmitBtn').disabled = false;
+        }
+
+        function submitImport() {
+            var file = document.getElementById('importFile').files[0];
+            if (!file) return;
+
+            var submitBtn = document.getElementById('importSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '导入中...';
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var content = e.target.result;
+                var lines = content.split('\n').filter(function(l) { return l.trim(); });
+
+                if (lines.length < 2) {
+                    showImportResult(false, '文件中没有有效数据行');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '开始导入';
+                    return;
+                }
+
+                var successCount = 0;
+                var failCount = 0;
+                for (var i = 1; i < lines.length; i++) {
+                    var cols = lines[i].split(',');
+                    if (cols.length >= 8 && cols[0].trim()) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
+                }
+
+                showImportResult(true, '成功导入 ' + successCount + ' 条记录' + (failCount > 0 ? '，' + failCount + ' 条格式有误已跳过' : ''));
+                submitBtn.disabled = false;
+                submitBtn.textContent = '开始导入';
+            };
+
+            reader.onerror = function() {
+                showImportResult(false, '文件读取失败，请重试');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '开始导入';
+            };
+
+            reader.readAsText(file);
+        }
+
+        function showImportResult(success, message) {
+            var result = document.getElementById('importResult');
+            result.style.display = 'block';
+            result.innerHTML = '<div style="padding:12px 16px;border-radius:8px;font-size:14px;' +
+                (success ? 'background:#d1fae5;color:#059669;border:1px solid #a7f3d0;' : 'background:#fee2e2;color:#dc2626;border:1px solid #fecaca;') +
+                '">' + (success ? '✓ ' : '✕ ') + message + '</div>';
+        }
+
+        document.getElementById('importModal').addEventListener('click', function(e) {
+            if (e.target === this) closeImportModal();
+        });
     </script>
 </body>
 </html>

@@ -143,6 +143,19 @@
 
         .form-textarea:focus { outline: none; border-color: #4facfe; }
 
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+            background: #fafbfc;
+            font-family: inherit;
+        }
+
+        .form-input:focus { outline: none; border-color: #4facfe; }
+
         .btn {
             width: 100%;
             padding: 13px;
@@ -609,6 +622,10 @@
             html += '</div>';
             html += '</div>';
 
+            html += '<div class="form-group"><label class="form-label">住户姓名</label>';
+            html += '<input type="text" class="form-input" id="residentName" placeholder="请输入住户姓名" value="' + (pickerValues.residentName || '') + '">';
+            html += '</div>';
+
             html += '<div class="form-group"><label class="form-label">认证备注</label>';
             html += '<textarea class="form-textarea" id="authNote" placeholder="请填写认证说明，如：我是该房号的业主/住户...">' + (pickerValues.note || '') + '</textarea>';
             html += '</div>';
@@ -646,7 +663,9 @@
             }
 
             var noteEl = document.getElementById('authNote');
+            var nameEl = document.getElementById('residentName');
             pickerValues.note = noteEl ? noteEl.value : '';
+            pickerValues.residentName = nameEl ? nameEl.value : '';
             pendingHouseData = JSON.parse(JSON.stringify(pickerValues));
 
             currentState = 'reviewing';
@@ -666,7 +685,9 @@
             }
 
             var noteEl = document.getElementById('authNote');
+            var nameEl = document.getElementById('residentName');
             pickerValues.note = noteEl ? noteEl.value : '';
+            pickerValues.residentName = nameEl ? nameEl.value : '';
             pendingHouseData = JSON.parse(JSON.stringify(pickerValues));
 
             currentState = 'modify_reviewing';
@@ -690,6 +711,7 @@
             html += '<div class="house-info-row"><span class="house-info-label">单元</span><span class="house-info-value">' + d.unit + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">层数</span><span class="house-info-value">' + d.floor + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">房号</span><span class="house-info-value">' + d.room + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">住户姓名</span><span class="house-info-value">' + (d.residentName || '未填写') + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">备注</span><span class="house-info-value">' + (d.note || '无') + '</span></div>';
             html += '</div>';
 
@@ -717,6 +739,7 @@
             html += '<div class="house-info-row"><span class="house-info-label">单元</span><span class="house-info-value">' + d.unit + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">层数</span><span class="house-info-value">' + d.floor + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">房号</span><span class="house-info-value">' + d.room + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">住户姓名</span><span class="house-info-value">' + (d.residentName || '未填写') + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">备注</span><span class="house-info-value">' + (d.note || '无') + '</span></div>';
             html += '</div>';
 
@@ -757,6 +780,7 @@
                 unit: '',
                 floor: '',
                 room: '',
+                residentName: '',
                 note: ''
             };
             closeModal('cancelReviewModal');
