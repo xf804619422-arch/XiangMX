@@ -64,10 +64,12 @@
         .sidebar-submenu {
             list-style: none;
             background: rgba(0,0,0,0.2);
-            display: none;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
         }
 
-        .sidebar-submenu.show { display: block; }
+        .sidebar-submenu.show { max-height: 300px; }
 
         .sidebar-submenu li {
             padding: 12px 20px 12px 50px;
@@ -86,7 +88,25 @@
         .sidebar-submenu li a {
             color: inherit;
             text-decoration: none;
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sidebar-badge {
+            display: inline-block;
+            min-width: 20px;
+            height: 20px;
+            line-height: 20px;
+            padding: 0 6px;
+            background: #ef4444;
+            color: white;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            margin-left: 6px;
+            vertical-align: top;
         }
 
         .content {
@@ -124,6 +144,55 @@
         }
 
         .status-filter:focus { outline: none; border-color: #667eea; }
+
+        .category-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .category-tab {
+            padding: 10px 24px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .category-tab:hover { color: #667eea; }
+
+        .category-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+
+        .category-tab .tab-count {
+            display: inline-block;
+            min-width: 18px;
+            height: 18px;
+            line-height: 18px;
+            padding: 0 5px;
+            background: #f0f0f0;
+            color: #999;
+            border-radius: 9px;
+            font-size: 11px;
+            margin-left: 6px;
+            font-weight: 500;
+        }
+
+        .category-tab.active .tab-count {
+            background: #eef2ff;
+            color: #667eea;
+        }
 
         .btn {
             padding: 10px 20px;
@@ -387,7 +456,12 @@
 </head>
 <body>
     <header class="header">
-        <h1>认证审核</h1>
+        <h1>🔧 多商户电商系统</h1>
+        <nav class="header-nav" style="display:flex;gap:20px;">
+            <a href="index.html" style="color:white;text-decoration:none;font-size:14px;opacity:0.9;">首页</a>
+            <a href="house-info.html" style="color:white;text-decoration:none;font-size:14px;opacity:0.9;">房屋信息</a>
+            <a href="property-gold.html" style="color:white;text-decoration:none;font-size:14px;opacity:0.9;">物业金管理</a>
+        </nav>
     </header>
 
     <div class="main-container">
@@ -402,7 +476,7 @@
                     <ul class="sidebar-submenu show">
                         <li><a href="house-info.html">房屋信息</a></li>
                         <li><a href="property-gold.html">物业金管理</a></li>
-                        <li class="active"><a href="auth-review.html">认证审核</a></li>
+                        <li class="active"><a href="auth-review.html">认证审核<span class="sidebar-badge" id="sidebarPendingCount">0</span></a></li>
                     </ul>
                 </li>
             </ul>
@@ -411,18 +485,18 @@
         <main class="content">
             <div class="search-bar">
                 <input type="text" class="search-input" id="searchInput" placeholder="搜索申请人昵称、姓名、手机号、房屋信息..." onkeyup="handleSearch">
-                <select class="status-filter" id="statusFilter">
-                    <option value="">全部状态</option>
-                    <option value="pending">待审核</option>
-                    <option value="approved">已通过</option>
-                    <option value="rejected">已拒绝</option>
-                </select>
                 <button class="btn btn-primary" onclick="performSearch()">搜索</button>
+            </div>
+
+            <div class="category-tabs">
+                <button class="category-tab active" data-status="pending" onclick="switchTab('pending')">待认证<span class="tab-count" id="pendingCount">0</span></button>
+                <button class="category-tab" data-status="approved" onclick="switchTab('approved')">审核通过<span class="tab-count" id="approvedCount">0</span></button>
+                <button class="category-tab" data-status="rejected" onclick="switchTab('rejected')">审核拒绝<span class="tab-count" id="rejectedCount">0</span></button>
             </div>
 
             <div class="table-container">
                 <div class="table-header">
-                    <h2>认证申请列表</h2>
+                    <h2 id="tableTitle">待认证申请</h2>
                     <span class="count">共 <span id="totalCount">0</span> 条记录</span>
                 </div>
                 <table id="reviewTable">
@@ -465,7 +539,7 @@
         var pageSize = 10;
         var totalPages = 1;
         var currentSearch = '';
-        var currentStatus = '';
+        var currentStatus = 'pending';
         var selectedRecord = null;
 
         var mockData = [
@@ -556,6 +630,35 @@
             pagination.innerHTML = html;
         }
 
+        function switchTab(status) {
+            currentStatus = status;
+            currentPage = 1;
+
+            document.querySelectorAll('.category-tab').forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+            var activeTab = document.querySelector('.category-tab[data-status="' + status + '"]');
+            if (activeTab) activeTab.classList.add('active');
+
+            var titles = { 'pending': '待认证申请', 'approved': '审核通过申请', 'rejected': '审核拒绝申请' };
+            document.getElementById('tableTitle').textContent = titles[status] || '认证申请列表';
+
+            filterData();
+        }
+
+        function updateTabCounts() {
+            var pending = 0, approved = 0, rejected = 0;
+            for (var i = 0; i < mockData.length; i++) {
+                if (mockData[i].status === 'pending') pending++;
+                else if (mockData[i].status === 'approved') approved++;
+                else if (mockData[i].status === 'rejected') rejected++;
+            }
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('approvedCount').textContent = approved;
+            document.getElementById('rejectedCount').textContent = rejected;
+            document.getElementById('sidebarPendingCount').textContent = pending;
+        }
+
         function filterData() {
             var filtered = mockData.filter(function(item) {
                 var matchSearch = true;
@@ -594,7 +697,6 @@
 
         function performSearch() {
             currentSearch = document.getElementById('searchInput').value.trim();
-            currentStatus = document.getElementById('statusFilter').value;
             currentPage = 1;
             filterData();
         }
@@ -639,6 +741,7 @@
             if (!selectedRecord) return;
             selectedRecord.status = 'approved';
             closeModal('detailModal');
+            updateTabCounts();
             filterData();
             showToast('审核通过成功');
         }
@@ -652,6 +755,7 @@
             }
             selectedRecord.status = 'rejected';
             closeModal('detailModal');
+            updateTabCounts();
             filterData();
             showToast('已拒绝申请');
         }
@@ -664,12 +768,12 @@
         }
 
         document.getElementById('searchInput').addEventListener('keyup', handleSearch);
-        document.getElementById('statusFilter').addEventListener('change', performSearch);
         
         document.getElementById('detailModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal('detailModal');
         });
 
+        updateTabCounts();
         filterData();
     </script>
 </body>

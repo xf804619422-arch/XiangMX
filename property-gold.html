@@ -89,11 +89,13 @@
         .sidebar-submenu {
             list-style: none;
             background: rgba(0,0,0,0.2);
-            display: none;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
         }
 
         .sidebar-submenu.show {
-            display: block;
+            max-height: 300px;
         }
 
         .sidebar-submenu li {
@@ -115,7 +117,24 @@
         .sidebar-submenu li a {
             color: inherit;
             text-decoration: none;
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sidebar-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 18px;
+            padding: 0 6px;
+            background: #ef4444;
+            color: white;
+            border-radius: 9px;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1;
         }
 
         .content-area {
@@ -385,7 +404,7 @@
                     <ul class="sidebar-submenu show">
                         <li><a href="house-info.html">房屋信息</a></li>
                         <li class="active"><a href="property-gold.html">物业金管理</a></li>
-                        <li><a href="auth-review.html">认证审核</a></li>
+                        <li><a href="auth-review.html">认证审核<span class="sidebar-badge">3</span></a></li>
                     </ul>
                 </li>
             </ul>

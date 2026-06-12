@@ -1,507 +1,4 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的房屋 - 微信小程序</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #e8ecf1;
-            min-height: 100vh;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            padding: 30px 20px;
-        }
-
-        .phone-frame {
-            width: 420px;
-            min-height: 780px;
-            background: #f5f6f8;
-            border-radius: 32px;
-            box-shadow: 0 12px 48px rgba(0,0,0,0.18);
-            overflow: hidden;
-            position: relative;
-        }
-
-        .status-bar {
-            height: 44px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            font-size: 12px;
-            color: #333;
-            font-weight: 600;
-        }
-
-        .nav-bar {
-            height: 48px;
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .nav-back {
-            position: absolute;
-            left: 16px;
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            color: #333;
-            padding: 4px;
-        }
-
-        .nav-title {
-            font-size: 17px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .page-content {
-            padding: 16px;
-            max-height: 640px;
-            overflow-y: auto;
-        }
-
-        .section-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 14px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-        }
-
-        .section-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 4px;
-        }
-
-        .section-subtitle {
-            font-size: 12px;
-            color: #999;
-            margin-bottom: 16px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-label {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 6px;
-            display: block;
-            font-weight: 500;
-        }
-
-        .form-select {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid #e5e5e5;
-            border-radius: 8px;
-            font-size: 14px;
-            color: #333;
-            background: #fafbfc;
-            cursor: pointer;
-            appearance: none;
-            -webkit-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%23999' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-        }
-
-        .form-select:focus { outline: none; border-color: #4facfe; }
-
-        .form-select:disabled {
-            background: #f0f0f0;
-            color: #bbb;
-            cursor: not-allowed;
-        }
-
-        .form-textarea {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid #e5e5e5;
-            border-radius: 8px;
-            font-size: 14px;
-            color: #333;
-            resize: vertical;
-            min-height: 80px;
-            font-family: inherit;
-        }
-
-        .form-textarea:focus { outline: none; border-color: #4facfe; }
-
-        .form-input {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid #e5e5e5;
-            border-radius: 8px;
-            font-size: 14px;
-            color: #333;
-            background: #fafbfc;
-            font-family: inherit;
-        }
-
-        .form-input:focus { outline: none; border-color: #4facfe; }
-
-        .btn {
-            width: 100%;
-            padding: 13px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-            color: white;
-        }
-
-        .btn-primary:hover { opacity: 0.9; }
-        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
-
-        .btn-outline {
-            background: white;
-            color: #666;
-            border: 1px solid #ddd;
-        }
-
-        .btn-outline:hover { border-color: #4facfe; color: #4facfe; }
-
-        .btn-danger {
-            background: white;
-            color: #ef4444;
-            border: 1px solid #fecaca;
-        }
-
-        .btn-danger:hover { background: #fef2f2; }
-
-        .btn-warning {
-            background: white;
-            color: #f59e0b;
-            border: 1px solid #fde68a;
-        }
-
-        .btn-warning:hover { background: #fffbeb; }
-
-        .btn-sm {
-            width: auto;
-            padding: 6px 14px;
-            font-size: 12px;
-            border-radius: 4px;
-        }
-
-        .cascade-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .cascade-col3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .badge-pending {
-            background: #fef3c7;
-            color: #d97706;
-        }
-
-        .badge-success {
-            background: #d1fae5;
-            color: #059669;
-        }
-
-        .badge-reject {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-
-        .house-info-display {
-            background: #f0f9ff;
-            border-radius: 10px;
-            padding: 16px;
-            border: 1px solid #bae6fd;
-        }
-
-        .house-info-row {
-            display: flex;
-            align-items: center;
-            padding: 6px 0;
-        }
-
-        .house-info-label {
-            width: 72px;
-            font-size: 13px;
-            color: #999;
-            flex-shrink: 0;
-        }
-
-        .house-info-value {
-            font-size: 14px;
-            color: #333;
-            font-weight: 500;
-        }
-
-        .member-list-item {
-            display: flex;
-            align-items: center;
-            padding: 14px 0;
-            border-bottom: 1px solid #f5f5f5;
-            gap: 12px;
-        }
-
-        .member-list-item:last-child { border-bottom: none; }
-
-        .member-avatar {
-            width: 44px; height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .member-info { flex: 1; }
-        .member-name { font-size: 14px; font-weight: 500; color: #333; }
-        .member-role { font-size: 12px; color: #999; margin-top: 2px; }
-
-        .member-tag {
-            font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-weight: 500;
-        }
-
-        .tag-owner { background: #dbeafe; color: #1d4ed8; }
-        .tag-family { background: #f3e8ff; color: #7c3aed; }
-        .tag-tenant { background: #fce7f3; color: #be185d; }
-
-        .property-gold-card {
-            background: linear-gradient(135deg, #fffbeb, #fef3c7);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            border: 1px solid #fde68a;
-            margin-bottom: 14px;
-        }
-
-        .gold-amount {
-            font-size: 36px;
-            font-weight: 700;
-            color: #d97706;
-        }
-
-        .gold-label {
-            font-size: 13px;
-            color: #b45309;
-            margin-top: 4px;
-        }
-
-        .gold-detail-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #f5f5f5;
-            font-size: 13px;
-        }
-
-        .gold-detail-item:last-child { border-bottom: none; }
-        .gold-detail-time { color: #999; }
-        .gold-detail-amount { font-weight: 600; }
-        .gold-plus { color: #059669; }
-        .gold-minus { color: #dc2626; }
-
-        .tabs {
-            display: flex;
-            background: #f5f6f8;
-            border-radius: 8px;
-            padding: 3px;
-            margin-bottom: 16px;
-        }
-
-        .tab-item {
-            flex: 1;
-            text-align: center;
-            padding: 8px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            color: #999;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-            background: none;
-        }
-
-        .tab-item.active {
-            background: white;
-            color: #333;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s;
-        }
-
-        .modal-overlay.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .modal-dialog {
-            background: white;
-            border-radius: 16px;
-            width: 320px;
-            padding: 24px;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-        }
-
-        .modal-icon {
-            font-size: 40px;
-            margin-bottom: 12px;
-        }
-
-        .modal-title {
-            font-size: 17px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .modal-text {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-
-        .modal-btns {
-            display: flex;
-            gap: 10px;
-        }
-
-        .modal-btns .btn {
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 14px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #bbb;
-        }
-
-        .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
-        .empty-state .empty-text { font-size: 14px; }
-
-        .toast {
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(0.8);
-            background: rgba(0,0,0,0.78);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            z-index: 2000;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s;
-        }
-
-        .toast.show {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
-        }
-
-        @media (max-width: 460px) {
-            .phone-frame { width: 100%; border-radius: 0; min-height: 100vh; }
-            body { padding: 0; }
-        }
-    </style>
-</head>
-<body>
-    <div class="phone-frame">
-        <div class="status-bar">
-            <span>9:41</span>
-            <span>📶 🔋</span>
-        </div>
-        <div class="nav-bar">
-            <button class="nav-back" onclick="window.location.href='index.html'">&lt;</button>
-            <span class="nav-title">我的房屋</span>
-        </div>
-        <div class="page-content" id="pageContent"></div>
-    </div>
-
-    <div class="modal-overlay" id="unbindModal">
-        <div class="modal-dialog">
-            <div class="modal-icon">⚠</div>
-            <div class="modal-title">确认解绑</div>
-            <div class="modal-text">解绑后将不再展示该房屋信息，无需审核立即生效。确定要解绑吗？</div>
-            <div class="modal-btns">
-                <button class="btn btn-outline" onclick="closeModal('unbindModal')">取消</button>
-                <button class="btn" style="background:#ef4444;color:white;" onclick="confirmUnbind()">确认解绑</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="cancelReviewModal">
-        <div class="modal-dialog">
-            <div class="modal-icon">❓</div>
-            <div class="modal-title">撤销审核</div>
-            <div class="modal-text">确定要撤销当前审核申请吗？撤销后可重新提交认证信息。</div>
-            <div class="modal-btns">
-                <button class="btn btn-outline" onclick="closeModal('cancelReviewModal')">取消</button>
-                <button class="btn btn-primary" onclick="confirmCancelReview()">确定撤销</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="toast" id="toast"></div>
-
-    <script>
         var currentState = 'unauthenticated';
         var pendingHouseData = null;
         var authenticatedHouseData = null;
@@ -734,6 +231,18 @@
             html += '</div>';
 
             html += '<div class="house-info-display">';
+            var a = authenticatedHouseData;
+            html += '<div style="font-size:12px;color:#059669;font-weight:500;margin-bottom:10px;">当前认证信息</div>';
+            html += '<div class="house-info-row"><span class="house-info-label">小区</span><span class="house-info-value">' + a.community + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">期数</span><span class="house-info-value">' + a.phase + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">楼栋</span><span class="house-info-value">' + a.building + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">单元</span><span class="house-info-value">' + a.unit + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">层数</span><span class="house-info-value">' + a.floor + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">房号</span><span class="house-info-value">' + a.room + '</span></div>';
+            html += '</div>';
+
+            html += '<div class="house-info-display" style="border-color:#fef3c7;background:#fffbeb;margin-top:14px;">';
+            html += '<div style="font-size:12px;color:#d97706;font-weight:500;margin-bottom:10px;">修改申请待审核</div>';
             html += '<div class="house-info-row"><span class="house-info-label">小区</span><span class="house-info-value">' + d.community + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">期数</span><span class="house-info-value">' + d.phase + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">楼栋</span><span class="house-info-value">' + d.building + '</span></div>';
@@ -743,8 +252,6 @@
             html += '<div class="house-info-row"><span class="house-info-label">住户姓名</span><span class="house-info-value">' + (d.residentName || '未填写') + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">备注</span><span class="house-info-value">' + (d.note || '无') + '</span></div>';
             html += '</div>';
-
-            html += '<div style="margin-top:12px;font-size:12px;color:#999;">原认证信息：' + authenticatedHouseData.community + ' ' + authenticatedHouseData.phase + ' ' + authenticatedHouseData.building + ' ' + authenticatedHouseData.unit + ' ' + authenticatedHouseData.floor + ' ' + authenticatedHouseData.room + '</div>';
 
             html += '<div style="margin-top:14px;display:flex;gap:10px;">';
             html += '<button class="btn btn-outline btn-sm" onclick="openModal(\'cancelReviewModal\')" style="flex:1;">撤销申请</button>';
@@ -825,7 +332,19 @@
 
             html += '<div class="section-subtitle" style="margin-bottom:14px;">审核未通过原因：提交的房屋信息与实际不符，请核对后重新提交。</div>';
 
-            html += '<div class="house-info-display" style="border-color:#fecaca;background:#fff5f5;">';
+            html += '<div class="house-info-display">';
+            var a = authenticatedHouseData;
+            html += '<div style="font-size:12px;color:#059669;font-weight:500;margin-bottom:10px;">当前认证信息</div>';
+            html += '<div class="house-info-row"><span class="house-info-label">小区</span><span class="house-info-value">' + a.community + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">期数</span><span class="house-info-value">' + a.phase + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">楼栋</span><span class="house-info-value">' + a.building + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">单元</span><span class="house-info-value">' + a.unit + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">层数</span><span class="house-info-value">' + a.floor + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">房号</span><span class="house-info-value">' + a.room + '</span></div>';
+            html += '</div>';
+
+            html += '<div class="house-info-display" style="border-color:#fecaca;background:#fff5f5;margin-top:14px;">';
+            html += '<div style="font-size:12px;color:#dc2626;font-weight:500;margin-bottom:10px;">未通过的修改申请</div> ';
             html += '<div class="house-info-row"><span class="house-info-label">小区</span><span class="house-info-value">' + d.community + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">期数</span><span class="house-info-value">' + d.phase + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">楼栋</span><span class="house-info-value">' + d.building + '</span></div>';
@@ -835,8 +354,6 @@
             html += '<div class="house-info-row"><span class="house-info-label">住户姓名</span><span class="house-info-value">' + (d.residentName || '未填写') + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">备注</span><span class="house-info-value">' + (d.note || '无') + '</span></div>';
             html += '</div>';
-
-            html += '<div style="margin-top:12px;font-size:12px;color:#999;">原认证信息：' + authenticatedHouseData.community + ' ' + authenticatedHouseData.phase + ' ' + authenticatedHouseData.building + ' ' + authenticatedHouseData.unit + ' ' + authenticatedHouseData.floor + ' ' + authenticatedHouseData.room + '</div>';
 
             html += '<div style="margin-top:14px;display:flex;gap:10px;">';
             html += '<button class="btn btn-outline btn-sm" onclick="openModal(\'cancelReviewModal\')" style="flex:1;">撤销申请</button>';
@@ -860,20 +377,27 @@
 
         function confirmCancelReview() {
             pendingHouseData = null;
-            currentState = 'unauthenticated';
-            pickerValues = {
-                community: '',
-                phase: '',
-                building: '',
-                unit: '',
-                floor: '',
-                room: '',
-                residentName: '',
-                note: ''
-            };
             closeModal('cancelReviewModal');
-            renderAuthPage(false);
-            showToast('已撤销审核申请');
+            if (authenticatedHouseData) {
+                currentState = 'authenticated';
+                pickerValues = JSON.parse(JSON.stringify(authenticatedHouseData));
+                renderAuthenticatedPage();
+                showToast('已撤销修改申请');
+            } else {
+                currentState = 'unauthenticated';
+                pickerValues = {
+                    community: '',
+                    phase: '',
+                    building: '',
+                    unit: '',
+                    floor: '',
+                    room: '',
+                    residentName: '',
+                    note: ''
+                };
+                renderAuthPage(false);
+                showToast('已撤销审核申请');
+            }
         }
 
         function renderAuthenticatedPage() {
@@ -1028,6 +552,4 @@
         });
 
         renderAuthPage(false);
-    </script>
-</body>
-</html>
+    
