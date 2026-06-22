@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>陌管家 - 分类</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { --safe-top: 44px; --safe-bottom: 34px; font-size: 16px; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: #f5f5f5; color: #333; min-height: 100vh;
+    display: flex; justify-content: center;
+  }
+  .app-shell {
+    width: 100%; max-width: 414px; min-height: 100vh;
+    background: #f5f5f5; position: relative; overflow-x: hidden;
+  }
+
+  /* 导航栏 */
+  .nav-bar {
+    position: sticky; top: 0; z-index: 100;
+    background: linear-gradient(135deg, #2c6b4f 0%, #3d8b63 100%);
+    color: #fff; padding: calc(var(--safe-top) - 34px) 16px 12px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(44,107,79,0.25);
+  }
+  .nav-back {
+    position: absolute; left: 16px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .nav-back:hover { background: rgba(255,255,255,0.35); }
+  .nav-back svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2; }
+  .nav-title { font-size: 18px; font-weight: 600; letter-spacing: 0.5px; }
+
+  /* 排序栏 */
+  .sort-bar {
+    display: flex; align-items: center;
+    margin: 12px 12px 0; background: #fff; border-radius: 14px 14px 0 0;
+    padding: 12px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .sort-title { font-size: 15px; font-weight: 600; color: #222; margin-right: auto; }
+  .sort-count { font-size: 12px; color: #999; font-weight: 400; margin-left: 2px; }
+  .sort-btn {
+    display: flex; align-items: center; gap: 4px; font-size: 13px; color: #666;
+    padding: 6px 14px; border-radius: 18px; cursor: pointer;
+    transition: all 0.2s; border: none; background: transparent;
+    font-family: inherit; white-space: nowrap;
+  }
+  .sort-btn:hover { background: #f5f5f5; }
+  .sort-btn.active { color: #2c6b4f; font-weight: 600; background: #eef6f0; }
+  .sort-btn .arrow { font-size: 9px; margin-left: -2px; }
+  .sort-divider { width: 1px; height: 14px; background: #e8e8e8; margin: 0 4px; }
+
+  /* 商家列表 */
+  .shop-list { padding: 0 12px 24px; }
+  .shop-card {
+    background: #fff; display: flex; gap: 12px; padding: 14px 16px;
+    cursor: pointer; transition: background 0.15s; border-bottom: 1px solid #f0f0f0;
+  }
+  .shop-card:last-child { border-radius: 0 0 14px 14px; border-bottom: none; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+  .shop-card:active { background: #fafafa; }
+
+  .shop-cover {
+    width: 90px; height: 90px; border-radius: 10px; flex-shrink: 0;
+    position: relative; overflow: hidden;
+  }
+  .shop-cover-tag {
+    position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,0.55);
+    color: #fff; font-size: 9px; padding: 2px 6px; border-radius: 4px;
+  }
+
+  .shop-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; }
+  .shop-name-row { display: flex; align-items: center; gap: 8px; }
+  .shop-name { font-size: 15px; font-weight: 600; color: #222; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .shop-tag {
+    flex-shrink: 0; font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500;
+  }
+  .tag-food  { color: #e06b30; background: #fff0e6; }
+  .tag-shop  { color: #2c7bbf; background: #e8f4fd; }
+  .tag-child { color: #c8882a; background: #fff5e6; }
+  .tag-home  { color: #5b6abf; background: #eef2ff; }
+  .tag-hotel { color: #2d8b5e; background: #e6f7f0; }
+
+  .shop-reward {
+    font-size: 12px; color: #c8882a; background: linear-gradient(90deg, #fff8ed, #fffdf5);
+    padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 4px;
+    width: fit-content;
+  }
+  .shop-reward .reward-num { font-size: 16px; font-weight: 700; color: #e08820; }
+  .shop-reward .reward-icon { width: 14px; height: 14px; background: #f0a030; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+  .shop-reward .reward-icon::after { content: '金'; font-size: 8px; color: #fff; font-weight: 700; }
+
+  .shop-address-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .shop-address {
+    font-size: 11px; color: #999; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .shop-address svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+  .nav-btn {
+    flex-shrink: 0; display: flex; align-items: center; gap: 3px;
+    padding: 5px 10px; border-radius: 14px; background: #eef6f0;
+    color: #2c6b4f; font-size: 11px; font-weight: 500;
+    cursor: pointer; transition: background 0.2s; border: none; font-family: inherit;
+  }
+  .nav-btn:hover { background: #dcefe2; }
+  .nav-btn svg { width: 12px; height: 12px; }
+
+  .bottom-safe { height: calc(var(--safe-bottom) + 16px); }
+
+  .empty-state {
+    background: #fff; border-radius: 0 0 14px 14px; padding: 60px 20px;
+    text-align: center; color: #bbb; font-size: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <div class="nav-bar">
+    <div class="nav-back" onclick="window.location.href='mo-manager-prototype.html'" title="返回">
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <span class="nav-title" id="categoryTitle">分类</span>
+  </div>
+
+  <div class="sort-bar">
+    <span class="sort-title" id="sortTitle">商户服务</span>
+    <span class="sort-count" id="sortCount"></span>
+    <button class="sort-btn active" id="sortNearest" onclick="setSort('nearest')">离我最近</button>
+    <span class="sort-divider"></span>
+    <button class="sort-btn" id="sortGold" onclick="setSort('gold')">物业金 <span class="arrow">&#9660;</span></button>
+  </div>
+
+  <div class="shop-list" id="shopListContainer"></div>
+
+  <div class="bottom-safe"></div>
+</div>
+
+<script>
+// ===== 分类配置 =====
+const categoryConfig = {
+  food:    { name: '餐饮美食', tagClass: 'tag-food',  iconBg: 'linear-gradient(135deg, #e04a2a, #f56c42)' },
+  shop:    { name: '邻里商圈', tagClass: 'tag-shop',  iconBg: 'linear-gradient(135deg, #38a850, #5cc96e)' },
+  child:   { name: '育儿托管', tagClass: 'tag-child', iconBg: 'linear-gradient(135deg, #f0a030, #f7c060)' },
+  home:    { name: '到家服务', tagClass: 'tag-home',  iconBg: 'linear-gradient(135deg, #5b6abf, #8895e0)' },
+  travel:  { name: '旅游精选', tagClass: 'tag-hotel', iconBg: 'linear-gradient(135deg, #2d8b5e, #4dba80)' },
+};
+
+// ===== 完整商家数据 =====
+const allShops = [
+  // ---- 餐饮美食 ----
+  { id:1,  cat:'food', name:'老巷口川味火锅',       reward:'3%',   dist:320,  address:'西湖区翠苑街道文一路28号负一层B06铺',                          coverBg:'linear-gradient(135deg, #e04a2a, #f56c42)' },
+  { id:2,  cat:'food', name:'味千拉面·银泰店',       reward:'3.2%', dist:720,  address:'上城区湖滨街道延安路258号湖滨银泰in77 B1层032铺',               coverBg:'linear-gradient(135deg, #d94838, #f07058)' },
+  { id:3,  cat:'food', name:'稻禾日料·匠心店',       reward:'2.8%', dist:580,  address:'拱墅区米市巷街道湖墅南路299号武林银泰6层A区',                   coverBg:'linear-gradient(135deg, #c04838, #e86850)' },
+  { id:4,  cat:'food', name:'绿意轻食沙拉工坊',       reward:'4%',   dist:260,  address:'西湖区西溪街道文三路478号华星时代广场1层沿街',                   coverBg:'linear-gradient(135deg, #5b9e3f, #7dc85a)' },
+  // ---- 邻里商圈 ----
+  { id:5,  cat:'shop', name:'鲜果日记·社区生鲜',       reward:'2.5%', dist:480,  address:'拱墅区祥符街道古墩路99号沿街底商东3门',                           coverBg:'linear-gradient(135deg, #38a850, #5cc96e)' },
+  { id:6,  cat:'shop', name:'邻家便利店24h',          reward:'1.5%', dist:150,  address:'西湖区古荡街道莲花街333号南都花园南门东侧临街商铺',               coverBg:'linear-gradient(135deg, #3a90c8, #5cb8f0)' },
+  { id:7,  cat:'shop', name:'美佳乐生活超市',         reward:'2%',   dist:380,  address:'西湖区文新街道文二西路218号世纪联华1层',                           coverBg:'linear-gradient(135deg, #f0803a, #f5a060)' },
+  { id:8,  cat:'shop', name:'花漾花坊',               reward:'3.5%', dist:620,  address:'拱墅区大关街道大关路179号远洋乐堤港B1层',                         coverBg:'linear-gradient(135deg, #e85088, #f580a8)' },
+  // ---- 育儿托管 ----
+  { id:9,  cat:'child', name:'贝优托育中心',          reward:'5%',   dist:650,  address:'西湖区文新街道文二西路168号望湖大厦2层201室',                     coverBg:'linear-gradient(135deg, #f0a030, #f7c060)' },
+  { id:10, cat:'child', name:'小天才编程启蒙',         reward:'6%',   dist:540,  address:'西湖区翠苑街道学院路222号创智天地3层F区311室',                   coverBg:'linear-gradient(135deg, #e89828, #f5b850)' },
+  { id:11, cat:'child', name:'蒙台梭利儿童之家',       reward:'4.5%', dist:800,  address:'余杭区仓前街道文一西路998号海创园18幢1层',                         coverBg:'linear-gradient(135deg, #6b5bc0, #9b8be0)' },
+  { id:12, cat:'child', name:'书香阁绘本馆',           reward:'5.5%', dist:420,  address:'拱墅区小河街道和睦路55号运河天地2层',                               coverBg:'linear-gradient(135deg, #3d9bc0, #5dc0e0)' },
+  // ---- 到家服务 ----
+  { id:13, cat:'home', name:'洁净家·上门保洁',         reward:'4%',   dist:1200, address:'余杭区五常街道文一西路969号阿里巴巴西溪园区A区',                  coverBg:'linear-gradient(135deg, #5b6abf, #8895e0)' },
+  { id:14, cat:'home', name:'速达家电维修',           reward:'3.8%', dist:350,  address:'西湖区翠苑街道学院路102号翠苑五金市场2楼',                         coverBg:'linear-gradient(135deg, #5070c8, #7090e8)' },
+  { id:15, cat:'home', name:'舒心搬家服务',           reward:'2.5%', dist:900,  address:'拱墅区上塘路399号运河广告产业园7号楼',                              coverBg:'linear-gradient(135deg, #8b5ab0, #a87ac8)' },
+  // ---- 旅游精选 ----
+  { id:16, cat:'travel', name:'西湖国旅·精品游',      reward:'2%',   dist:890,  address:'西湖区北山街道天目山路88号龙都大厦1层大堂',                        coverBg:'linear-gradient(135deg, #2d8b5e, #4dba80)' },
+  { id:17, cat:'travel', name:'漫游假期旅行社',        reward:'2.2%', dist:720,  address:'上城区清波街道河坊街388号南宋御街入口',                              coverBg:'linear-gradient(135deg, #2e8b70, #50b090)' },
+  { id:18, cat:'travel', name:'千岛湖度假直通车',     reward:'3%',   dist:450,  address:'西湖区灵隐街道浙大路38号浙江大学玉泉校区北门',                     coverBg:'linear-gradient(135deg, #2580a0, #50b0d0)' },
+];
+
+let currentSort = 'nearest';
+let currentCat = '';
+let filteredShops = [];
+
+// ===== 获取URL参数 =====
+function getParam(name) {
+  const m = location.search.match(new RegExp('[?&]'+name+'=([^&]*)'));
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
+// ===== 初始化 =====
+function init() {
+  currentCat = getParam('cat') || 'food';
+  const cfg = categoryConfig[currentCat];
+  if (!cfg) { currentCat = 'food'; }
+
+  // 设置导航标题
+  document.getElementById('categoryTitle').textContent = cfg.name;
+
+  // 筛选该分类下的商家
+  filteredShops = allShops.filter(s => s.cat === currentCat);
+  document.getElementById('sortCount').textContent = '(' + filteredShops.length + ')';
+
+  renderShopList('nearest');
+}
+
+// ===== 渲染 =====
+function renderShopList(sortType) {
+  const container = document.getElementById('shopListContainer');
+  const cfg = categoryConfig[currentCat];
+  let sorted = [...filteredShops];
+
+  if (sortType === 'nearest') {
+    sorted.sort((a,b) => a.dist - b.dist);
+  } else if (sortType === 'gold') {
+    sorted.sort((a,b) => parseFloat(b.reward) - parseFloat(a.reward));
+  }
+
+  if (sorted.length === 0) {
+    container.innerHTML = '<div class="empty-state">暂无该分类下的商户</div>';
+    return;
+  }
+
+  container.innerHTML = sorted.map(s => {
+    const distText = s.dist >= 1000 ? (s.dist/1000).toFixed(1)+'km' : s.dist+'m';
+    return `
+    <div class="shop-card">
+      <div class="shop-cover" style="background:${s.coverBg};">
+        <span class="shop-cover-tag">${cfg.name}</span>
+      </div>
+      <div class="shop-info">
+        <div class="shop-name-row">
+          <span class="shop-name">${s.name}</span>
+          <span class="shop-tag ${cfg.tagClass}">${cfg.name}</span>
+        </div>
+        <div class="shop-reward">
+          <span class="reward-icon"></span> 每消耗一笔，获得 <span class="reward-num">${s.reward}</span> 物业金
+        </div>
+        <div class="shop-address-row">
+          <span class="shop-address">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="3"/></svg>
+            距您 ${distText} | ${s.address}
+          </span>
+          <button class="nav-btn" onclick="event.stopPropagation(); void(0)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="3,11 22,2 13,21 11,13 3,11"/></svg>
+            导航
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== 排序切换 =====
+function setSort(type) {
+  currentSort = type;
+  document.getElementById('sortNearest').classList.toggle('active', type === 'nearest');
+  document.getElementById('sortGold').classList.toggle('active', type === 'gold');
+  renderShopList(type);
+}
+
+init();
+</script>
+</body>
+</html>

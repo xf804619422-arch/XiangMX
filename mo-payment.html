@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>物业金支付</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { --safe-top: 44px; --safe-bottom: 34px; font-size: 16px; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    background: #f5f5f5; color: #333; min-height: 100vh;
+    display: flex; justify-content: center;
+  }
+  .app-shell {
+    width: 100%; max-width: 414px; min-height: 100vh;
+    background: #f5f5f5; position: relative; overflow-x: hidden;
+    display: flex; flex-direction: column;
+  }
+
+  /* 导航栏 */
+  .nav-bar {
+    position: sticky; top: 0; z-index: 100;
+    background: linear-gradient(135deg, #2c6b4f 0%, #3d8b63 100%);
+    color: #fff; padding: calc(var(--safe-top) - 34px) 16px 12px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(44,107,79,0.25);
+  }
+  .nav-back {
+    position: absolute; left: 16px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .nav-back:hover { background: rgba(255,255,255,0.35); }
+  .nav-back svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2; }
+  .nav-title { font-size: 18px; font-weight: 600; letter-spacing: 0.5px; }
+
+  /* 金额区域 */
+  .amount-section {
+    background: #fff; margin: 16px 12px 0;
+    border-radius: 16px; padding: 28px 20px 24px;
+    text-align: center;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  }
+  .amount-label { font-size: 14px; color: #999; margin-bottom: 8px; }
+  .amount-value {
+    display: flex; align-items: baseline; justify-content: center; gap: 4px;
+    color: #2c6b4f; font-weight: 700;
+  }
+  .amount-symbol { font-size: 28px; }
+  .amount-number { font-size: 48px; line-height: 1; letter-spacing: -1px; }
+  .amount-desc {
+    font-size: 13px; color: #999; margin-top: 12px;
+    padding-top: 14px; border-top: 1px dashed #eee;
+  }
+
+  /* 支付方式区域 */
+  .pay-section { padding: 16px 12px 0; }
+  .section-title { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 12px; padding-left: 4px; }
+
+  .pay-method {
+    background: #fff; border-radius: 14px; margin-bottom: 12px;
+    padding: 16px; display: flex; align-items: center; gap: 14px;
+    cursor: pointer; transition: all 0.2s;
+    border: 2px solid transparent; position: relative;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  }
+  .pay-method:hover { background: #fafafa; }
+  .pay-method.selected {
+    border-color: #2c6b4f;
+    background: #f6fbf7;
+  }
+
+  /* 单选图标 */
+  .radio-icon {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid #d0d0d0; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.25s;
+  }
+  .pay-method.selected .radio-icon {
+    border-color: #2c6b4f; background: #2c6b4f;
+  }
+  .radio-icon::after {
+    content: ''; width: 8px; height: 8px; border-radius: 50%;
+    background: #fff; transform: scale(0); transition: transform 0.25s;
+  }
+  .pay-method.selected .radio-icon::after { transform: scale(1); }
+
+  /* 支付图标 */
+  .pay-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 20px; color: #fff; font-weight: 700;
+  }
+  .pay-icon.wechat { background: #07c160; }
+  .pay-icon.balance { background: #f5a623; }
+  .pay-icon.property { background: #2c6b4f; }
+
+  /* 支付信息文本 */
+  .pay-info { flex: 1; min-width: 0; }
+  .pay-name { font-size: 16px; font-weight: 600; color: #222; }
+  .pay-subtitle { font-size: 13px; color: #999; margin-top: 4px; }
+
+  .pay-tag {
+    font-size: 11px; color: #2c6b4f; background: #e6f5ec;
+    padding: 2px 8px; border-radius: 10px; flex-shrink: 0;
+    font-weight: 500; display: none;
+  }
+  .pay-method.selected .pay-tag { display: inline-block; }
+
+  /* 选中勾 */
+  .check-mark {
+    width: 20px; height: 20px; flex-shrink: 0; display: none;
+  }
+  .pay-method.selected .check-mark { display: block; }
+  .pay-method.selected .check-mark svg { width: 20px; height: 20px; }
+
+  /* 底部按钮 */
+  .bottom-bar {
+    margin-top: auto; padding: 16px 12px calc(16px + var(--safe-bottom));
+    background: #fff; box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+  }
+  .pay-btn {
+    width: 100%; height: 50px; border-radius: 25px; border: none;
+    background: linear-gradient(135deg, #2c6b4f 0%, #3d8b63 100%);
+    color: #fff; font-size: 17px; font-weight: 600; letter-spacing: 1px;
+    cursor: pointer; transition: all 0.25s;
+    box-shadow: 0 4px 14px rgba(44,107,79,0.35);
+    font-family: inherit;
+  }
+  .pay-btn:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(44,107,79,0.4); }
+  .pay-btn:active { transform: scale(0.98); opacity: 0.85; }
+
+  /* Toast */
+  .toast {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+    background: rgba(0,0,0,0.78); color: #fff; font-size: 15px;
+    padding: 14px 28px; border-radius: 10px; z-index: 999;
+    pointer-events: none; opacity: 0; transition: all 0.3s;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- 导航栏 -->
+  <div class="nav-bar">
+    <div class="nav-back" onclick="showToast('返回上一页')">
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <span class="nav-title">支付订单</span>
+  </div>
+
+  <!-- 支付金额 -->
+  <div class="amount-section">
+    <div class="amount-label">支付金额</div>
+    <div class="amount-value">
+      <span class="amount-symbol">¥</span>
+      <span class="amount-number">158.00</span>
+    </div>
+  </div>
+
+  <!-- 支付方式 -->
+  <div class="pay-section">
+    <div class="section-title">选择支付方式</div>
+
+    <!-- 微信支付 -->
+    <div class="pay-method wechat-method" onclick="selectPay('wechat')" data-pay="wechat">
+      <div class="radio-icon"></div>
+      <div class="pay-icon wechat">微</div>
+      <div class="pay-info">
+        <div class="pay-name">微信支付</div>
+        <div class="pay-subtitle">微信快捷支付</div>
+      </div>
+      <span class="pay-tag">推荐</span>
+    </div>
+
+    <!-- 余额支付 -->
+    <div class="pay-method selected" onclick="selectPay('balance')" data-pay="balance">
+      <div class="radio-icon"></div>
+      <div class="pay-icon balance">余</div>
+      <div class="pay-info">
+        <div class="pay-name">余额支付</div>
+        <div class="pay-subtitle">可用余额 ¥521.20</div>
+      </div>
+      <span class="pay-tag">当前选择</span>
+    </div>
+
+    <!-- 物业金支付 -->
+    <div class="pay-method" onclick="selectPay('property')" data-pay="property">
+      <div class="radio-icon"></div>
+      <div class="pay-icon property">物</div>
+      <div class="pay-info">
+        <div class="pay-name">物业金支付</div>
+        <div class="pay-subtitle">当前可用余额 ¥11.30</div>
+      </div>
+      <span class="pay-tag">当前选择</span>
+    </div>
+  </div>
+
+  <!-- 底部支付按钮 -->
+  <div class="bottom-bar">
+    <button class="pay-btn" onclick="handlePay()">立即支付</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  let currentPay = 'balance';
+
+  function selectPay(method) {
+    if (currentPay === method) return;
+
+    // Clear all selected
+    document.querySelectorAll('.pay-method').forEach(el => {
+      el.classList.remove('selected');
+    });
+
+    // Set selected
+    const target = document.querySelector(`[data-pay="${method}"]`);
+    if (target) {
+      target.classList.add('selected');
+      currentPay = method;
+
+      // 轻触反馈动画
+      target.style.transform = 'scale(0.97)';
+      setTimeout(() => { target.style.transform = ''; }, 150);
+    }
+  }
+
+  function handlePay() {
+    const payBtn = document.querySelector('.pay-btn');
+    payBtn.textContent = '处理中...';
+    payBtn.style.pointerEvents = 'none';
+    payBtn.style.opacity = '0.7';
+
+    setTimeout(() => {
+      payBtn.textContent = '立即支付';
+      payBtn.style.pointerEvents = '';
+      payBtn.style.opacity = '1';
+      showToast('支付成功');
+    }, 800);
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 1500);
+  }
+</script>
+</body>
+</html>

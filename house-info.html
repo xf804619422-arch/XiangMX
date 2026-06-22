@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -1480,11 +1480,24 @@
                         <div class="stat-label">住户数量</div>
                         <div class="stat-value">3<small>人</small></div>
                     </div>
+                    <div class="stat-card">
+                        <div class="stat-label">房屋面积</div>
+                        <div class="stat-value" id="roomAreaDisplay">--<small>平米</small></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">物业费（月）</div>
+                        <div class="stat-value" id="roomFeeDisplay">--<small>元</small></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">物业费单价</div>
+                        <div class="stat-value" id="roomFeeRateDisplay">--<small>元/平米</small></div>
+                    </div>
                 </div>
 
                 <div class="action-buttons">
                     <button class="btn btn-primary" onclick="openAdjustModal()">⚙️ 调整物业金</button>
                     <button class="btn btn-secondary" onclick="openPropertyFeeModal()">📋 物业金明细</button>
+                    <button class="btn btn-secondary" onclick="openRoomInfoModal()">🏠 调整房屋信息</button>
                 </div>
 
                 <div class="section-title">
@@ -1708,6 +1721,16 @@
                     <label>名称</label>
                     <input type="text" id="addChildName" placeholder="请输入名称">
                 </div>
+                <div id="roomExtraFields" style="display:none;">
+                    <div class="form-group">
+                        <label>房屋面积（平米）</label>
+                        <input type="number" id="roomArea" placeholder="请输入房屋面积" min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>物业费单价（元/平米）</label>
+                        <input type="number" id="roomFeeRate" placeholder="请输入物业费单价" min="0" step="0.01">
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeAddChildModal()">取消</button>
@@ -1767,6 +1790,30 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="roomInfoModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>🏠 调整房屋信息</h3>
+                <button class="modal-close" onclick="closeRoomInfoModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="roomInfoCurrent" style="font-size:13px;color:#999;margin-bottom:16px;"></div>
+                <div class="form-group">
+                    <label>房屋面积（平米）</label>
+                    <input type="number" id="editRoomArea" placeholder="请输入房屋面积" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>物业费单价（元/平米）</label>
+                    <input type="number" id="editRoomFeeRate" placeholder="请输入物业费单价" min="0" step="0.01">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeRoomInfoModal()">取消</button>
+                <button class="btn btn-primary" onclick="submitRoomInfo()">保存</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const mockResidents = {
             'r101': [
@@ -1810,6 +1857,24 @@
 
         let currentRoomId = null;
         let currentBalance = 12580.00;
+        let roomMeta = {
+            'r101': { area: 89.5, feeRate: 3.2 },
+            'r102': { area: 89.5, feeRate: 3.2 },
+            'r103': { area: 89.5, feeRate: 3.2 },
+            'r104': { area: 89.5, feeRate: 3.2 },
+            'r105': { area: 105.0, feeRate: 3.2 },
+            'r106': { area: 105.0, feeRate: 3.2 },
+            'r107': { area: 105.0, feeRate: 3.2 },
+            'r108': { area: 105.0, feeRate: 3.2 },
+            'r201': { area: 120.0, feeRate: 3.5 },
+            'r202': { area: 120.0, feeRate: 3.5 },
+            'r203': { area: 120.0, feeRate: 3.5 },
+            'r204': { area: 130.5, feeRate: 3.5 },
+            'r301': { area: 130.5, feeRate: 3.5 },
+            'r302': { area: 130.5, feeRate: 3.5 },
+            'r303': { area: 98.0, feeRate: 3.0 },
+            'r304': { area: 98.0, feeRate: 3.0 }
+        };
         let currentAdjustType = 'add';
         let commPage = 1;
         let commPageSize = 8;
@@ -2159,6 +2224,18 @@
             const residents = mockResidents[currentRoomId] || [];
             document.getElementById('roomSubtitle').textContent = `共 ${residents.length} 名住户`;
 
+            const meta = roomMeta[currentRoomId];
+            if (meta && meta.area > 0) {
+                document.getElementById('roomAreaDisplay').innerHTML = meta.area.toFixed(1) + '<small>平米</small>';
+                document.getElementById('roomFeeRateDisplay').innerHTML = '¥' + meta.feeRate.toFixed(2) + '<small>元/平米</small>';
+                const monthlyFee = meta.area * meta.feeRate;
+                document.getElementById('roomFeeDisplay').innerHTML = '¥' + monthlyFee.toFixed(2) + '<small>元</small>';
+            } else {
+                document.getElementById('roomAreaDisplay').innerHTML = '--<small>平米</small>';
+                document.getElementById('roomFeeRateDisplay').innerHTML = '--<small>元/平米</small>';
+                document.getElementById('roomFeeDisplay').innerHTML = '--<small>元</small>';
+            }
+
             const residentList = document.getElementById('residentList');
             if (residents.length === 0) {
                 residentList.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">暂无住户信息</div>';
@@ -2495,6 +2572,12 @@
             }
         });
 
+        document.getElementById('roomInfoModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRoomInfoModal();
+            }
+        });
+
         document.getElementById('communityQrModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeCommunityQrModal();
@@ -2621,6 +2704,9 @@
             const nextLevel = getNextLevel(level);
             document.getElementById('addChildLevel').textContent = getLevelName(nextLevel);
             document.getElementById('addChildName').value = '';
+            document.getElementById('roomArea').value = '';
+            document.getElementById('roomFeeRate').value = '';
+            document.getElementById('roomExtraFields').style.display = (nextLevel === 'room') ? 'block' : 'none';
             document.getElementById('addChildModal').classList.add('show');
         }
 
@@ -2645,6 +2731,12 @@
             const newId = addChildTarget.level + '_new_' + Date.now();
             const nextLevel = getNextLevel(addChildTarget.level);
             const isRoom = nextLevel === 'room';
+
+            if (isRoom) {
+                const area = parseFloat(document.getElementById('roomArea').value) || 0;
+                const feeRate = parseFloat(document.getElementById('roomFeeRate').value) || 0;
+                roomMeta[newId] = { area: area, feeRate: feeRate };
+            }
 
             const newItem = document.createElement('div');
             newItem.className = `tree-item${isRoom ? ' end-item' : ''}`;
@@ -2700,6 +2792,33 @@
 
         function closeAddCommunityModal() {
             document.getElementById('addCommunityModal').classList.remove('show');
+        }
+
+        function openRoomInfoModal() {
+            if (!currentRoomId) return;
+            const meta = roomMeta[currentRoomId] || { area: 0, feeRate: 0 };
+            const roomLabel = document.querySelector(`.tree-item[data-id="${currentRoomId}"] .tree-label`).textContent;
+            document.getElementById('roomInfoCurrent').innerHTML = '当前房号：<strong>' + roomLabel + '</strong>';
+            document.getElementById('editRoomArea').value = meta.area || '';
+            document.getElementById('editRoomFeeRate').value = meta.feeRate || '';
+            document.getElementById('roomInfoModal').classList.add('show');
+        }
+
+        function closeRoomInfoModal() {
+            document.getElementById('roomInfoModal').classList.remove('show');
+        }
+
+        function submitRoomInfo() {
+            var area = parseFloat(document.getElementById('editRoomArea').value) || 0;
+            var feeRate = parseFloat(document.getElementById('editRoomFeeRate').value) || 0;
+            roomMeta[currentRoomId] = { area: area, feeRate: feeRate };
+
+            document.getElementById('roomAreaDisplay').innerHTML = area > 0 ? area.toFixed(1) + '<small>平米</small>' : '--<small>平米</small>';
+            document.getElementById('roomFeeRateDisplay').innerHTML = feeRate > 0 ? '¥' + feeRate.toFixed(2) + '<small>元/平米</small>' : '--<small>元/平米</small>';
+            var monthlyFee = area * feeRate;
+            document.getElementById('roomFeeDisplay').innerHTML = (area > 0 && feeRate > 0) ? '¥' + monthlyFee.toFixed(2) + '<small>元</small>' : '--<small>元</small>';
+
+            closeRoomInfoModal();
         }
 
         function submitAddCommunity() {

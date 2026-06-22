@@ -747,6 +747,156 @@
             white-space: nowrap;
         }
 
+        /* 物业金返还比例配置弹窗 */
+        .refund-config-card {
+            border: 1px solid #e8eaed;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+            background: #fafbfc;
+        }
+        .refund-config-card .config-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .refund-config-card .config-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .refund-config-card .config-icon.online {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .refund-config-card .config-icon.offline {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .refund-config-card h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .refund-config-card .config-desc {
+            font-size: 12px;
+            color: #999;
+            margin: 0;
+        }
+        .toggle-group {
+            display: flex;
+            gap: 0;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            overflow: hidden;
+            width: fit-content;
+            margin-bottom: 12px;
+        }
+        .toggle-btn {
+            padding: 6px 18px;
+            font-size: 13px;
+            cursor: pointer;
+            border: none;
+            background: #fff;
+            color: #666;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .toggle-btn:not(:last-child) {
+            border-right: 1px solid #d9d9d9;
+        }
+        .toggle-btn.active {
+            background: #1a73e8;
+            color: #fff;
+        }
+        .toggle-btn:hover:not(.active) {
+            background: #f0f0f0;
+        }
+        .refund-input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .refund-input-row label {
+            font-size: 13px;
+            color: #555;
+            white-space: nowrap;
+        }
+        .input-unit {
+            display: flex;
+            align-items: center;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            overflow: hidden;
+            height: 36px;
+        }
+        .input-unit input {
+            border: none;
+            outline: none;
+            width: 100px;
+            padding: 0 10px;
+            font-size: 14px;
+            color: #333;
+            font-family: inherit;
+        }
+        .input-unit .unit {
+            padding: 0 10px;
+            background: #fafbfc;
+            color: #888;
+            font-size: 13px;
+            border-left: 1px solid #d9d9d9;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+        .current-rule {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #888;
+            background: #f5f5f5;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+        .current-rule strong {
+            color: #1a73e8;
+        }
+        .refund-ratio-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        /* 商家分类 */
+        .cat-icon-cell {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            flex-shrink: 0;
+            overflow: hidden;
+            background: #e8eaed;
+        }
+        .cat-icon-cell img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         /* Toast */
         .toast {
             position: fixed;
@@ -805,6 +955,7 @@
             <div class="menu-group-title">商家管理</div>
             <div class="menu-item active" onclick="switchView('merchant-list')"><span class="menu-dot"></span><span>商家列表</span></div>
             <div class="menu-item" onclick="switchView('application')"><span class="menu-dot"></span><span>入驻申请</span></div>
+            <div class="menu-item" onclick="switchView('category')"><span class="menu-dot"></span><span>商家分类</span></div>
         </div>
     </aside>
 
@@ -950,6 +1101,43 @@
             </div>
         </div>
 
+        <!-- ========== 商家分类视图 ========== -->
+        <div id="view-category" style="display:none;">
+            <div class="content-header">
+                <h1 class="page-title">商家分类</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openCategoryModal()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        新增分类
+                    </button>
+                </div>
+            </div>
+
+            <div class="card" style="padding: 0;">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:64px;">图标</th>
+                                <th>分类名称</th>
+                                <th style="width:80px;">排序</th>
+                                <th style="width:100px;">商家数量</th>
+                                <th style="width:140px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoryTableBody"></tbody>
+                    </table>
+                </div>
+                <div style="padding: 0 24px 16px;">
+                    <div class="pagination">
+                        <div class="page-info">
+                            共 <strong id="catTotalCount">4</strong> 个分类
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 </div>
 
@@ -1072,11 +1260,199 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 物业金返还比例 -->
+                <div class="form-section">
+                    <div class="form-section-title">物业金返还比例</div>
+                    <div class="refund-config-card">
+                        <div class="config-header">
+                            <div class="config-icon online">购</div>
+                            <div>
+                                <h4>线上购物奖励</h4>
+                                <p class="config-desc">用户通过平台线上购物后获得的物业金奖励</p>
+                            </div>
+                        </div>
+                        <div class="toggle-group" id="addOnlineToggle">
+                            <button type="button" class="toggle-btn active" data-type="percent" onclick="switchAddRefundMode('online', 'percent')">按百分比</button>
+                            <button type="button" class="toggle-btn" data-type="fixed" onclick="switchAddRefundMode('online', 'fixed')">固定金额</button>
+                        </div>
+                        <div class="refund-input-row" id="addOnlinePercentGroup">
+                            <label>下单金额百分比</label>
+                            <div class="input-unit">
+                                <input type="number" id="addOnlinePercent" value="1" min="0" max="100" step="0.1">
+                                <span class="unit">%</span>
+                            </div>
+                        </div>
+                        <div class="refund-input-row" id="addOnlineFixedGroup" style="display:none;">
+                            <label>固定奖励金额</label>
+                            <div class="input-unit">
+                                <input type="number" id="addOnlineFixed" value="5" min="0" step="0.01">
+                                <span class="unit">元</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="refund-config-card">
+                        <div class="config-header">
+                            <div class="config-icon offline">扫</div>
+                            <div>
+                                <h4>线下扫码支付奖励</h4>
+                                <p class="config-desc">用户通过线下扫码支付后获得的物业金奖励</p>
+                            </div>
+                        </div>
+                        <div class="toggle-group" id="addOfflineToggle">
+                            <button type="button" class="toggle-btn active" data-type="percent" onclick="switchAddRefundMode('offline', 'percent')">按百分比</button>
+                            <button type="button" class="toggle-btn" data-type="fixed" onclick="switchAddRefundMode('offline', 'fixed')">固定金额</button>
+                        </div>
+                        <div class="refund-input-row" id="addOfflinePercentGroup">
+                            <label>支付金额百分比</label>
+                            <div class="input-unit">
+                                <input type="number" id="addOfflinePercent" value="0.5" min="0" max="100" step="0.1">
+                                <span class="unit">%</span>
+                            </div>
+                        </div>
+                        <div class="refund-input-row" id="addOfflineFixedGroup" style="display:none;">
+                            <label>固定奖励金额</label>
+                            <div class="input-unit">
+                                <input type="number" id="addOfflineFixed" value="3" min="0" step="0.01">
+                                <span class="unit">元</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
         <div class="modal-footer">
             <button class="btn btn-default" onclick="closeAddModal()">取消</button>
-            <button class="btn btn-primary" onclick="document.getElementById('addMerchantForm').requestSubmit()">确认添加</button>
+            <button class="btn btn-primary" onclick="document.getElementById('addMerchantForm').requestSubmit()" id="addFormSubmitBtn">确认添加</button>
+        </div>
+    </div>
+</div>
+
+<!-- 商家分类 新增/编辑弹窗 -->
+<div class="modal-overlay" id="categoryModal" style="display:none;" onclick="closeOnOverlay(event, 'categoryModal')">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 id="categoryModalTitle">新增分类</h3>
+            <button class="modal-close" onclick="closeCategoryModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>分类名称 <span class="required">*</span></label>
+                    <input type="text" id="catName" required placeholder="请输入分类名称">
+                </div>
+                <div class="form-group">
+                    <label>排序</label>
+                    <input type="number" id="catSort" min="0" value="99" placeholder="数字越小越靠前">
+                </div>
+                <div class="form-group full">
+                    <label>分类图标 <span class="required">*</span></label>
+                    <div class="upload-area" onclick="simulateCatUpload()">
+                        <div class="upload-icon"></div>
+                        <span class="upload-text">点击上传分类图标</span>
+                    </div>
+                    <div class="uploaded-imgs" id="catIconPreview"></div>
+                    <input type="hidden" id="catIcon" value="">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default" onclick="closeCategoryModal()">取消</button>
+            <button class="btn btn-primary" onclick="submitCategoryForm()">确认</button>
+        </div>
+    </div>
+</div>
+
+<!-- 阻断提示弹窗 -->
+<div class="modal-overlay" id="blockDialog" style="display:none;" onclick="closeOnOverlay(event, 'blockDialog')">
+    <div class="modal" style="max-width:440px;" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 id="blockDialogTitle">提示</h3>
+            <button class="modal-close" onclick="closeBlockDialog()">&times;</button>
+        </div>
+        <div class="modal-body" style="text-align:center;padding:32px 24px;">
+            <div style="width:48px;height:48px;border-radius:50%;background:#fef7e0;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f9ab00" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <p id="blockDialogMsg" style="font-size:14px;color:#555;line-height:1.6;"></p>
+        </div>
+        <div class="modal-footer" style="justify-content:center;">
+            <button class="btn btn-primary" onclick="closeBlockDialog()">知道了</button>
+        </div>
+    </div>
+</div>
+
+<!-- 物业金返还比例配置弹窗 -->
+<div class="modal-overlay" id="refundModal" style="display:none;" onclick="closeOnOverlay(event, 'refundModal')">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>配置物业金返还比例</h3>
+            <button class="modal-close" onclick="closeRefundModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:13px;color:#999;margin-bottom:18px;">为 <strong id="refundMerchantName" style="color:#1a73e8;">待定</strong> 配置用户消费后的物业金返还规则</p>
+
+            <div class="refund-config-card">
+                <div class="config-header">
+                    <div class="config-icon online">购</div>
+                    <div>
+                        <h4>线上购物奖励</h4>
+                        <p class="config-desc">用户通过平台线上购物后获得的物业金奖励</p>
+                    </div>
+                </div>
+                <div class="toggle-group" id="refundOnlineToggle">
+                    <button class="toggle-btn active" data-type="percent" onclick="switchRefundMode('online', 'percent')">按百分比</button>
+                    <button class="toggle-btn" data-type="fixed" onclick="switchRefundMode('online', 'fixed')">固定金额</button>
+                </div>
+                <div class="refund-input-row" id="refundOnlinePercentGroup">
+                    <label>下单金额百分比</label>
+                    <div class="input-unit">
+                        <input type="number" id="refundOnlinePercent" value="1" min="0" max="100" step="0.1">
+                        <span class="unit">%</span>
+                    </div>
+                </div>
+                <div class="refund-input-row" id="refundOnlineFixedGroup" style="display:none;">
+                    <label>固定奖励金额</label>
+                    <div class="input-unit">
+                        <input type="number" id="refundOnlineFixed" value="5" min="0" step="0.01">
+                        <span class="unit">元</span>
+                    </div>
+                </div>
+                <div class="current-rule" id="refundOnlineRule">当前规则：<strong>按百分比 1.0%</strong> 奖励物业金</div>
+            </div>
+
+            <div class="refund-config-card">
+                <div class="config-header">
+                    <div class="config-icon offline">扫</div>
+                    <div>
+                        <h4>线下扫码支付奖励</h4>
+                        <p class="config-desc">用户通过线下扫码支付后获得的物业金奖励</p>
+                    </div>
+                </div>
+                <div class="toggle-group" id="refundOfflineToggle">
+                    <button class="toggle-btn active" data-type="percent" onclick="switchRefundMode('offline', 'percent')">按百分比</button>
+                    <button class="toggle-btn" data-type="fixed" onclick="switchRefundMode('offline', 'fixed')">固定金额</button>
+                </div>
+                <div class="refund-input-row" id="refundOfflinePercentGroup">
+                    <label>支付金额百分比</label>
+                    <div class="input-unit">
+                        <input type="number" id="refundOfflinePercent" value="0.5" min="0" max="100" step="0.1">
+                        <span class="unit">%</span>
+                    </div>
+                </div>
+                <div class="refund-input-row" id="refundOfflineFixedGroup" style="display:none;">
+                    <label>固定奖励金额</label>
+                    <div class="input-unit">
+                        <input type="number" id="refundOfflineFixed" value="3" min="0" step="0.01">
+                        <span class="unit">元</span>
+                    </div>
+                </div>
+                <div class="current-rule" id="refundOfflineRule">当前规则：<strong>按百分比 0.5%</strong> 奖励物业金</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default" onclick="closeRefundModal()">取消</button>
+            <button class="btn btn-primary" onclick="confirmRefundConfig()">确认配置并审核通过</button>
         </div>
     </div>
 </div>
@@ -1101,6 +1477,7 @@ const merchantData = [
         idFront: true,
         idBack: true,
         storePhoto: true,
+        refundRatio: { online: { mode: 'percent', value: 1 }, offline: { mode: 'percent', value: 0.5 } },
     },
     {
         id: "SH202406002",
@@ -1224,6 +1601,13 @@ const merchantData = [
     },
 ];
 
+// 确保所有商家都有物业金返还比例配置
+merchantData.forEach(m => {
+    if (!m.refundRatio) {
+        m.refundRatio = { online: { mode: 'percent', value: 1 }, offline: { mode: 'percent', value: 0.5 } };
+    }
+});
+
 // 生成 Logo 占位色
 const logoColors = ['#4CAF50','#FF9800','#2196F3','#E91E63','#9C27B0','#00BCD4','#FF5722','#607D8B','#795548'];
 function getLogoHTML(merchant, idx) {
@@ -1286,6 +1670,7 @@ function renderTable() {
             <td>
                 <div class="action-btns">
                     <button class="btn btn-ghost btn-sm" onclick="openDetailModal(${globalIdx})" title="查看详情">详情</button>
+                    <button class="btn btn-ghost btn-sm" onclick="openEditModal(${globalIdx})" title="编辑">编辑</button>
                     <button class="btn btn-sm ${m.status === 'active' ? 'btn-danger' : 'btn-success'}" onclick="toggleStatus(${globalIdx})">
                         ${m.status === 'active' ? '停用' : '启用'}
                     </button>
@@ -1353,6 +1738,13 @@ function openDetailModal(idx) {
             <span class="d-label">商家地址</span>
             <span class="d-value">${m.address}</span>
         </div>
+        <div class="detail-item full">
+            <span class="d-label">物业金返还比例</span>
+            <span class="d-value">
+                <span class="refund-ratio-badge">线上：${formatRefundRatio(m.refundRatio.online)}</span>
+                <span class="refund-ratio-badge" style="margin-left:6px;">线下：${formatRefundRatio(m.refundRatio.offline)}</span>
+            </span>
+        </div>
         <div class="detail-item">
             <span class="d-label">当前状态</span>
             <span class="d-value">
@@ -1408,23 +1800,98 @@ function closeDetailModal() {
 
 // ==================== 添加商家 ====================
 let nextId = 10;
+let editMerchantIdx = -1; // -1 表示新增模式
 
 function openAddModal() {
+    editMerchantIdx = -1;
     document.getElementById('addModalTitle').textContent = '添加商家';
+    document.getElementById('addFormSubmitBtn').textContent = '确认添加';
     document.getElementById('addMerchantForm').reset();
     // 清除上传预览
     ['logo','license','idFront','idBack','storePhoto'].forEach(k => {
         document.getElementById(k + 'Preview').innerHTML = '';
     });
+    // 重置物业金返还比例
+    resetAddRefundForm();
+    document.getElementById('addModal').style.display = 'flex';
+}
+
+function openEditModal(idx) {
+    editMerchantIdx = idx;
+    const m = merchantData[idx];
+    document.getElementById('addModalTitle').textContent = '编辑商家';
+    document.getElementById('addFormSubmitBtn').textContent = '确认更新';
+    document.getElementById('addName').value = m.name;
+    document.getElementById('addType').value = m.type;
+    document.getElementById('addContact').value = m.contact;
+    document.getElementById('addPhone').value = m.phone;
+    document.getElementById('addAddress').value = m.address;
+    document.getElementById('addHours').value = m.hours;
+    // 清除上传预览
+    ['logo','license','idFront','idBack','storePhoto'].forEach(k => {
+        document.getElementById(k + 'Preview').innerHTML = '';
+    });
+    // 回填物业金返还比例
+    if (m.refundRatio) {
+        if (m.refundRatio.online) {
+            switchAddRefundMode('online', m.refundRatio.online.mode);
+            if (m.refundRatio.online.mode === 'percent') {
+                document.getElementById('addOnlinePercent').value = m.refundRatio.online.value;
+            } else {
+                document.getElementById('addOnlineFixed').value = m.refundRatio.online.value;
+            }
+        }
+        if (m.refundRatio.offline) {
+            switchAddRefundMode('offline', m.refundRatio.offline.mode);
+            if (m.refundRatio.offline.mode === 'percent') {
+                document.getElementById('addOfflinePercent').value = m.refundRatio.offline.value;
+            } else {
+                document.getElementById('addOfflineFixed').value = m.refundRatio.offline.value;
+            }
+        }
+    }
     document.getElementById('addModal').style.display = 'flex';
 }
 
 function closeAddModal() {
     document.getElementById('addModal').style.display = 'none';
+    editMerchantIdx = -1;
 }
 
 function submitAddForm(e) {
     e.preventDefault();
+
+    // 读取物业金返还比例配置
+    const onlineMode = document.getElementById('addOnlinePercentGroup').style.display !== 'none' ? 'percent' : 'fixed';
+    const onlineValue = onlineMode === 'percent'
+        ? parseFloat(document.getElementById('addOnlinePercent').value) || 1
+        : parseFloat(document.getElementById('addOnlineFixed').value) || 5;
+    const offlineMode = document.getElementById('addOfflinePercentGroup').style.display !== 'none' ? 'percent' : 'fixed';
+    const offlineValue = offlineMode === 'percent'
+        ? parseFloat(document.getElementById('addOfflinePercent').value) || 0.5
+        : parseFloat(document.getElementById('addOfflineFixed').value) || 3;
+
+    if (editMerchantIdx >= 0) {
+        // 编辑模式
+        const m = merchantData[editMerchantIdx];
+        m.name = document.getElementById('addName').value;
+        m.type = document.getElementById('addType').value;
+        m.contact = document.getElementById('addContact').value;
+        m.phone = document.getElementById('addPhone').value;
+        m.address = document.getElementById('addAddress').value;
+        m.hours = document.getElementById('addHours').value || '09:00 - 18:00';
+        m.refundRatio = {
+            online: { mode: onlineMode, value: onlineValue },
+            offline: { mode: offlineMode, value: offlineValue }
+        };
+        editMerchantIdx = -1;
+        closeAddModal();
+        renderTable();
+        showToast('商家【' + m.name + '】信息已更新');
+        return;
+    }
+
+    // 新增模式
     const newMerchant = {
         id: 'SH' + new Date().getFullYear() + String(nextId).padStart(2, '0') + '001',
         name: document.getElementById('addName').value,
@@ -1439,6 +1906,10 @@ function submitAddForm(e) {
         idFront: document.getElementById('idFrontPreview').children.length > 0,
         idBack: document.getElementById('idBackPreview').children.length > 0,
         storePhoto: document.getElementById('storePhotoPreview').children.length > 0,
+        refundRatio: {
+            online: { mode: onlineMode, value: onlineValue },
+            offline: { mode: offlineMode, value: offlineValue }
+        },
     };
     merchantData.push(newMerchant);
     nextId++;
@@ -1511,10 +1982,27 @@ function closeOnOverlay(e, modalId) {
     }
 }
 
+// 阻断提示弹窗
+function showBlockDialog(title, msg) {
+    document.getElementById('blockDialogTitle').textContent = title;
+    document.getElementById('blockDialogMsg').innerHTML = msg;
+    document.getElementById('blockDialog').style.display = 'flex';
+}
+
+function closeBlockDialog() {
+    document.getElementById('blockDialog').style.display = 'none';
+}
+
 // ESC 关闭弹窗
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        if (document.getElementById('detailModal').style.display === 'flex') {
+        if (document.getElementById('refundModal').style.display === 'flex') {
+            closeRefundModal();
+        } else if (document.getElementById('blockDialog').style.display === 'flex') {
+            closeBlockDialog();
+        } else if (document.getElementById('categoryModal').style.display === 'flex') {
+            closeCategoryModal();
+        } else if (document.getElementById('detailModal').style.display === 'flex') {
             closeDetailModal();
         } else if (document.getElementById('addModal').style.display === 'flex') {
             closeAddModal();
@@ -1524,16 +2012,18 @@ document.addEventListener('keydown', function(e) {
 
 // ==================== 视图切换 ====================
 function switchView(view) {
-    document.querySelectorAll('#view-merchant-list, #view-application').forEach(v => v.style.display = 'none');
+    document.querySelectorAll('#view-merchant-list, #view-application, #view-category').forEach(v => v.style.display = 'none');
     document.getElementById('view-' + view).style.display = 'block';
     document.querySelectorAll('.sidebar .menu-item').forEach(m => m.classList.remove('active'));
-    // 激活对应的菜单项
     const menuItems = document.querySelectorAll('.sidebar .menu-item');
     if (view === 'merchant-list') {
         menuItems[0].classList.add('active');
     } else if (view === 'application') {
         menuItems[1].classList.add('active');
         renderAppTable();
+    } else if (view === 'category') {
+        menuItems[2].classList.add('active');
+        renderCategoryTable();
     }
 }
 
@@ -1627,11 +2117,110 @@ function resetAppFilter() {
 }
 
 // ==================== 入驻申请审核操作 ====================
+let pendingApproveApp = null; // 待通过申请引用
+
 function approveApp(idx) {
     const a = appData[idx];
+    pendingApproveApp = a;
+    document.getElementById('refundMerchantName').textContent = a.name;
+    // 重置为默认值
+    resetRefundForm();
+    document.getElementById('refundModal').style.display = 'flex';
+}
+
+function closeRefundModal() {
+    document.getElementById('refundModal').style.display = 'none';
+    pendingApproveApp = null;
+}
+
+function resetRefundForm() {
+    document.getElementById('refundOnlinePercent').value = 1;
+    document.getElementById('refundOnlineFixed').value = 5;
+    document.getElementById('refundOfflinePercent').value = 0.5;
+    document.getElementById('refundOfflineFixed').value = 3;
+    // 重置 toggle 为百分比模式
+    switchRefundMode('online', 'percent');
+    switchRefundMode('offline', 'percent');
+}
+
+function switchRefundMode(channel, mode) {
+    const toggleGroup = document.getElementById('refund' + channel.charAt(0).toUpperCase() + channel.slice(1) + 'Toggle');
+    toggleGroup.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === mode);
+    });
+    document.getElementById('refund' + channel.charAt(0).toUpperCase() + channel.slice(1) + 'PercentGroup').style.display = mode === 'percent' ? 'flex' : 'none';
+    document.getElementById('refund' + channel.charAt(0).toUpperCase() + channel.slice(1) + 'FixedGroup').style.display = mode === 'fixed' ? 'flex' : 'none';
+    // 更新规则预览
+    updateRefundRule(channel, mode);
+}
+
+function updateRefundRule(channel, mode) {
+    const label = channel === 'online' ? '线上购物' : '线下扫码支付';
+    let ruleText = '';
+    if (mode === 'percent') {
+        const val = parseFloat(document.getElementById('refund' + channel.charAt(0).toUpperCase() + channel.slice(1) + 'Percent').value) || 0;
+        ruleText = `按百分比 ${val}%`;
+    } else {
+        const val = parseFloat(document.getElementById('refund' + channel.charAt(0).toUpperCase() + channel.slice(1) + 'Fixed').value) || 0;
+        ruleText = `固定金额 ${val}元`;
+    }
+    document.getElementById('refund' + channel.charAt(0).toUpperCase() + channel.slice(1) + 'Rule').innerHTML = '当前规则：<strong>' + ruleText + '</strong> 奖励物业金';
+}
+
+// 监听输入变化实时更新规则预览
+['online','offline'].forEach(ch => {
+    const cap = ch.charAt(0).toUpperCase() + ch.slice(1);
+    ['Percent','Fixed'].forEach(suffix => {
+        const el = document.getElementById('refund' + cap + suffix);
+        if (el) {
+            el.addEventListener('input', function() {
+                const mode = document.getElementById('refund' + cap + 'PercentGroup').style.display !== 'none' ? 'percent' : 'fixed';
+                updateRefundRule(ch, mode);
+            });
+        }
+    });
+});
+
+// 添加/编辑表单中的返还比例切换
+function switchAddRefundMode(channel, mode) {
+    const cap = channel.charAt(0).toUpperCase() + channel.slice(1);
+    const toggleGroup = document.getElementById('add' + cap + 'Toggle');
+    toggleGroup.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === mode);
+    });
+    document.getElementById('add' + cap + 'PercentGroup').style.display = mode === 'percent' ? 'flex' : 'none';
+    document.getElementById('add' + cap + 'FixedGroup').style.display = mode === 'fixed' ? 'flex' : 'none';
+}
+
+function resetAddRefundForm() {
+    document.getElementById('addOnlinePercent').value = 1;
+    document.getElementById('addOnlineFixed').value = 5;
+    document.getElementById('addOfflinePercent').value = 0.5;
+    document.getElementById('addOfflineFixed').value = 3;
+    switchAddRefundMode('online', 'percent');
+    switchAddRefundMode('offline', 'percent');
+}
+
+function confirmRefundConfig() {
+    if (!pendingApproveApp) return;
+    const a = pendingApproveApp;
+
+    // 获取线上配置
+    const onlineMode = document.getElementById('refundOnlinePercentGroup').style.display !== 'none' ? 'percent' : 'fixed';
+    const onlineValue = onlineMode === 'percent'
+        ? parseFloat(document.getElementById('refundOnlinePercent').value) || 1
+        : parseFloat(document.getElementById('refundOnlineFixed').value) || 5;
+
+    // 获取线下配置
+    const offlineMode = document.getElementById('refundOfflinePercentGroup').style.display !== 'none' ? 'percent' : 'fixed';
+    const offlineValue = offlineMode === 'percent'
+        ? parseFloat(document.getElementById('refundOfflinePercent').value) || 0.5
+        : parseFloat(document.getElementById('refundOfflineFixed').value) || 3;
+
+    const idx = appData.indexOf(a);
     appData.splice(idx, 1);
-    showToast('申请【' + a.name + '】已审核通过，商家已生成');
-    // 同时添加到商家列表
+
+    // 添加到商家列表（含返还比例）
     merchantData.push({
         id: 'SH' + new Date().getFullYear() + String(nextId).padStart(2, '0') + '001',
         name: a.name, logo: '', type: a.type,
@@ -1640,10 +2229,26 @@ function approveApp(idx) {
         status: 'active',
         license: a.license, idFront: a.idFront,
         idBack: a.idBack, storePhoto: a.storePhoto,
+        refundRatio: {
+            online: { mode: onlineMode, value: onlineValue },
+            offline: { mode: offlineMode, value: offlineValue }
+        }
     });
     nextId++;
+    closeRefundModal();
     renderAppTable();
     renderTable();
+    showToast('申请【' + a.name + '】已审核通过，商家已生成，物业金返还比例已配置');
+}
+
+// 格式化返还比例显示
+function formatRefundRatio(ratio) {
+    if (!ratio) return '未配置';
+    if (ratio.mode === 'percent') {
+        return '按百分比 ' + ratio.value + '%';
+    } else {
+        return '固定金额 ' + ratio.value + '元';
+    }
 }
 
 function rejectApp(idx) {
@@ -1745,6 +2350,142 @@ function openAppDetailModal(idx) {
     document.querySelectorAll('#detailContent .detail-panel').forEach((p, i) => p.classList.toggle('active', i === 0));
 
     document.getElementById('detailModal').style.display = 'flex';
+}
+
+// ==================== 商家分类管理 ====================
+const categoryData = [
+    { id: 1, name: "邻里商圈", icon: "", sort: 1 },
+    { id: 2, name: "育儿托管", icon: "", sort: 2 },
+    { id: 3, name: "到家服务", icon: "", sort: 3 },
+    { id: 4, name: "旅游精选", icon: "", sort: 4 },
+];
+let catNextId = 5;
+let editCatId = -1;
+
+function simulateCatUpload() {
+    const preview = document.getElementById('catIconPreview');
+    const colors = ['#e3f2fd','#e8f5e9','#fce4ec','#fff3e0','#f3e5f5'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    preview.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'uploaded-img';
+    div.style.background = color;
+    div.style.display = 'flex';
+    div.style.alignItems = 'center';
+    div.style.justifyContent = 'center';
+    div.style.fontSize = '11px';
+    div.style.color = '#666';
+    div.textContent = '图标';
+    preview.appendChild(div);
+    // 存储颜色作为模拟图片标识（实际项目中存 URL）
+    document.getElementById('catIcon').value = color;
+    showToast('图标上传成功');
+}
+
+function renderCategoryTable() {
+    const sorted = [...categoryData].sort((a, b) => a.sort - b.sort);
+    const tbody = document.getElementById('categoryTableBody');
+    document.getElementById('catTotalCount').textContent = sorted.length;
+
+    if (sorted.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">暂无分类数据</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = sorted.map(c => {
+        const hasIcon = c.icon && c.icon !== '';
+        const count = merchantData.filter(m => m.type === c.name).length;
+        const iconHTML = hasIcon
+            ? `<div class="cat-icon-cell" style="background:${c.icon};color:#fff;">${c.name.charAt(0)}</div>`
+            : `<div class="cat-icon-cell" style="color:#999;font-size:20px;">+</div>`;
+        return `
+        <tr>
+            <td>${iconHTML}</td>
+            <td style="font-weight:500;">${c.name}</td>
+            <td>${c.sort}</td>
+            <td><span style="font-weight:600;color:#1a73e8;">${count}</span></td>
+            <td>
+                <div class="action-btns">
+                    <button class="btn btn-ghost btn-sm" onclick="openCategoryModal(${c.id})">编辑</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteCategory(${c.id})">删除</button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function openCategoryModal(id) {
+    editCatId = id || -1;
+    // 清除上传预览
+    document.getElementById('catIconPreview').innerHTML = '';
+    document.getElementById('catIcon').value = '';
+
+    if (editCatId >= 0) {
+        const c = categoryData.find(c => c.id === editCatId);
+        document.getElementById('categoryModalTitle').textContent = '编辑分类';
+        document.getElementById('catName').value = c.name;
+        document.getElementById('catSort').value = c.sort;
+        if (c.icon) {
+            document.getElementById('catIcon').value = c.icon;
+            const div = document.createElement('div');
+            div.className = 'uploaded-img';
+            div.style.background = c.icon;
+            div.style.display = 'flex';
+            div.style.alignItems = 'center';
+            div.style.justifyContent = 'center';
+            div.style.fontSize = '11px';
+            div.style.color = '#fff';
+            div.style.fontWeight = '600';
+            div.textContent = c.name.charAt(0);
+            document.getElementById('catIconPreview').appendChild(div);
+        }
+    } else {
+        document.getElementById('categoryModalTitle').textContent = '新增分类';
+        document.getElementById('catName').value = '';
+        document.getElementById('catSort').value = '99';
+    }
+    document.getElementById('categoryModal').style.display = 'flex';
+}
+
+function closeCategoryModal() {
+    document.getElementById('categoryModal').style.display = 'none';
+    editCatId = -1;
+}
+
+function submitCategoryForm() {
+    const name = document.getElementById('catName').value.trim();
+    const icon = document.getElementById('catIcon').value;
+    const sort = parseInt(document.getElementById('catSort').value) || 99;
+
+    if (!name) { showToast('请输入分类名称'); return; }
+
+    if (editCatId >= 0) {
+        const c = categoryData.find(c => c.id === editCatId);
+        c.name = name;
+        if (icon) c.icon = icon;
+        c.sort = sort;
+        showToast('分类【' + name + '】已更新');
+    } else {
+        categoryData.push({ id: catNextId++, name, icon, sort });
+        showToast('分类【' + name + '】已新增');
+    }
+    closeCategoryModal();
+    renderCategoryTable();
+}
+
+function deleteCategory(id) {
+    const c = categoryData.find(c => c.id === id);
+    if (!c) return;
+    const count = merchantData.filter(m => m.type === c.name).length;
+    if (count > 0) {
+        showBlockDialog('无法删除', '该分类下有 <strong style="color:#ea4335;">' + count + '</strong> 个商家，请先将这些商家转移或删除后再删除分类。');
+        return;
+    }
+    if (!confirm('确定删除分类【' + c.name + '】吗？')) return;
+    const idx = categoryData.indexOf(c);
+    categoryData.splice(idx, 1);
+    renderCategoryTable();
+    showToast('分类【' + c.name + '】已删除');
 }
 
 // ==================== 初始化 ====================

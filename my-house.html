@@ -562,7 +562,9 @@
             floor: '12层',
             room: '1203号',
             note: '我是业主，这是我的房产证编号：F-2024001',
-            role: 'owner'
+            role: 'owner',
+            area: 120.0,
+            feeRate: 3.5
         };
 
         function getRoleText(role) {
@@ -779,6 +781,9 @@
             html += '<div class="house-info-row"><span class="house-info-label">单元</span><span class="house-info-value">' + d.unit + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">层数</span><span class="house-info-value">' + d.floor + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">房号</span><span class="house-info-value">' + d.room + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">房屋面积</span><span class="house-info-value">' + (d.area || 0).toFixed(1) + ' 平米</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">物业费单价</span><span class="house-info-value">¥' + (d.feeRate || 0).toFixed(2) + '/平米</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">物业费/月</span><span class="house-info-value">¥' + ((d.area || 0) * (d.feeRate || 0)).toFixed(2) + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">住户姓名</span><span class="house-info-value">' + (d.residentName || '未填写') + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">住户身份</span><span class="house-info-value">' + getRoleText(d.role) + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">备注</span><span class="house-info-value">' + (d.note || '无') + '</span></div>';
@@ -966,6 +971,9 @@
             html += '<div class="house-info-row"><span class="house-info-label">单元</span><span class="house-info-value">' + d.unit + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">层数</span><span class="house-info-value">' + d.floor + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">房号</span><span class="house-info-value">' + d.room + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">房屋面积</span><span class="house-info-value">' + (d.area || 0).toFixed(1) + ' 平米</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">物业费单价</span><span class="house-info-value">¥' + (d.feeRate || 0).toFixed(2) + '/平米</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">物业费/月</span><span class="house-info-value">¥' + ((d.area || 0) * (d.feeRate || 0)).toFixed(2) + '</span></div>';
             html += '</div>';
 
             html += '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">';
