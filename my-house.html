@@ -460,6 +460,40 @@
             .phone-frame { width: 100%; border-radius: 0; min-height: 100vh; }
             body { padding: 0; }
         }
+
+        .invite-qr-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .invite-qr-wrap canvas {
+            border: 6px solid #f0f0f0;
+            border-radius: 10px;
+        }
+
+        .invite-house-info {
+            background: #f8f9fc;
+            border-radius: 8px;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+
+        .invite-house-info span {
+            color: #999;
+            margin-right: 8px;
+        }
+
+        .invite-tip {
+            font-size: 13px;
+            color: #999;
+            text-align: center;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -499,6 +533,20 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="inviteModal">
+        <div class="modal-dialog" style="width:340px;padding:28px 24px;">
+            <div class="modal-title" style="margin-bottom:16px;">邀请加入房屋</div>
+            <div class="invite-qr-wrap">
+                <canvas id="inviteQrCanvas" width="180" height="180"></canvas>
+            </div>
+            <div class="invite-house-info" id="inviteHouseInfo"></div>
+            <div class="invite-tip">扫码即可加入房屋</div>
+            <div class="modal-btns" style="margin-top:20px;">
+                <button class="btn btn-outline" onclick="closeModal('inviteModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast" id="toast"></div>
 
     <script>
@@ -513,8 +561,15 @@
             unit: '2单元',
             floor: '12层',
             room: '1203号',
-            note: '我是业主，这是我的房产证编号：F-2024001'
+            note: '我是业主，这是我的房产证编号：F-2024001',
+            role: 'owner'
         };
+
+        function getRoleText(role) {
+            if (role === 'owner') return '户主';
+            if (role === 'member') return '成员';
+            return '未设置';
+        }
 
         var members = [
             { name: '张明', role: '户主', tag: 'owner', phone: '138****5678' },
@@ -550,7 +605,8 @@
             building: '',
             unit: '',
             floor: '',
-            room: ''
+            room: '',
+            role: ''
         };
 
         function generateSelect(name, options, placeholder) {
@@ -626,6 +682,14 @@
             html += '<input type="text" class="form-input" id="residentName" placeholder="请输入住户姓名" value="' + (pickerValues.residentName || '') + '">';
             html += '</div>';
 
+            html += '<div class="form-group"><label class="form-label">住户身份</label>';
+            html += '<select class="form-select" id="residentRole">';
+            html += '<option value="">请选择身份</option>';
+            html += '<option value="owner"' + (pickerValues.role === 'owner' ? ' selected' : '') + '>户主</option>';
+            html += '<option value="member"' + (pickerValues.role === 'member' ? ' selected' : '') + '>成员</option>';
+            html += '</select>';
+            html += '</div>';
+
             html += '<div class="form-group"><label class="form-label">认证备注</label>';
             html += '<textarea class="form-textarea" id="authNote" placeholder="请填写认证说明，如：我是该房号的业主/住户...">' + (pickerValues.note || '') + '</textarea>';
             html += '</div>';
@@ -664,8 +728,10 @@
 
             var noteEl = document.getElementById('authNote');
             var nameEl = document.getElementById('residentName');
+            var roleEl = document.getElementById('residentRole');
             pickerValues.note = noteEl ? noteEl.value : '';
             pickerValues.residentName = nameEl ? nameEl.value : '';
+            pickerValues.role = roleEl ? roleEl.value : '';
             pendingHouseData = JSON.parse(JSON.stringify(pickerValues));
 
             currentState = 'reviewing';
@@ -686,8 +752,10 @@
 
             var noteEl = document.getElementById('authNote');
             var nameEl = document.getElementById('residentName');
+            var roleEl = document.getElementById('residentRole');
             pickerValues.note = noteEl ? noteEl.value : '';
             pickerValues.residentName = nameEl ? nameEl.value : '';
+            pickerValues.role = roleEl ? roleEl.value : '';
             pendingHouseData = JSON.parse(JSON.stringify(pickerValues));
 
             currentState = 'modify_reviewing';
@@ -712,6 +780,7 @@
             html += '<div class="house-info-row"><span class="house-info-label">层数</span><span class="house-info-value">' + d.floor + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">房号</span><span class="house-info-value">' + d.room + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">住户姓名</span><span class="house-info-value">' + (d.residentName || '未填写') + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">住户身份</span><span class="house-info-value">' + getRoleText(d.role) + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">备注</span><span class="house-info-value">' + (d.note || '无') + '</span></div>';
             html += '</div>';
 
@@ -741,6 +810,7 @@
             html += '<div class="house-info-row"><span class="house-info-label">层数</span><span class="house-info-value">' + d.floor + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">房号</span><span class="house-info-value">' + d.room + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">住户姓名</span><span class="house-info-value">' + (d.residentName || '未填写') + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">住户身份</span><span class="house-info-value">' + getRoleText(d.role) + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">备注</span><span class="house-info-value">' + (d.note || '无') + '</span></div>';
             html += '</div>';
 
@@ -803,6 +873,7 @@
             html += '<div class="house-info-row"><span class="house-info-label">层数</span><span class="house-info-value">' + d.floor + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">房号</span><span class="house-info-value">' + d.room + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">住户姓名</span><span class="house-info-value">' + (d.residentName || '未填写') + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">住户身份</span><span class="house-info-value">' + getRoleText(d.role) + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">备注</span><span class="house-info-value">' + (d.note || '无') + '</span></div>';
             html += '</div>';
 
@@ -833,6 +904,7 @@
             html += '<div class="house-info-row"><span class="house-info-label">层数</span><span class="house-info-value">' + d.floor + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">房号</span><span class="house-info-value">' + d.room + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">住户姓名</span><span class="house-info-value">' + (d.residentName || '未填写') + '</span></div>';
+            html += '<div class="house-info-row"><span class="house-info-label">住户身份</span><span class="house-info-value">' + getRoleText(d.role) + '</span></div>';
             html += '<div class="house-info-row"><span class="house-info-label">备注</span><span class="house-info-value">' + (d.note || '无') + '</span></div>';
             html += '</div>';
 
@@ -919,13 +991,17 @@
         function renderMembersContent() {
             var html = '<div class="section-card">';
             html += '<div class="section-title">同住成员</div>';
-            html += '<div class="section-subtitle">' + authenticatedHouseData.community + ' ' + authenticatedHouseData.building + ' ' + authenticatedHouseData.room + '</div>';
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">';
+            html += '<div class="section-subtitle" style="margin-bottom:0;">' + authenticatedHouseData.community + ' ' + authenticatedHouseData.building + ' ' + authenticatedHouseData.room + '</div>';
+            html += '<button class="btn btn-primary btn-sm" onclick="openModal(\'inviteModal\')">邀请加入</button>';
+            html += '</div>';
 
             for (var i = 0; i < members.length; i++) {
                 var m = members[i];
+                var roleLabel = m.tag === 'owner' ? '户主' : '成员';
                 html += '<div class="member-list-item">';
                 html += '<div class="member-avatar">' + m.name[0] + '</div>';
-                html += '<div class="member-info"><div class="member-name">' + m.name + '</div><div class="member-role">' + (m.phone || '未绑定手机') + '</div></div>';
+                html += '<div class="member-info"><div class="member-name">' + m.name + '<span class="member-tag tag-' + m.tag + '">' + roleLabel + '</span></div><div class="member-role">' + (m.phone || '未绑定手机') + '</div></div>';
                 html += '</div>';
             }
 
@@ -1000,6 +1076,7 @@
                     unit: '',
                     floor: '',
                     room: '',
+                    role: '',
                     note: ''
                 };
                 renderAuthPage(false);
@@ -1007,11 +1084,54 @@
         }
 
         function openModal(id) {
+            if (id === 'inviteModal') { generateInviteQR(); }
             document.getElementById(id).classList.add('show');
         }
 
         function closeModal(id) {
             document.getElementById(id).classList.remove('show');
+        }
+
+        function generateInviteQR() {
+            var d = authenticatedHouseData;
+            var infoHtml = '';
+            if (d.community) infoHtml += '<span>小区</span>' + d.community + '<br>';
+            if (d.phase) infoHtml += '<span>期数</span>' + d.phase + '<br>';
+            if (d.building) infoHtml += '<span>楼栋</span>' + d.building + '  <span>单元</span>' + d.unit + '<br>';
+            if (d.floor) infoHtml += '<span>层数</span>' + d.floor + '  <span>房号</span>' + d.room;
+            document.getElementById('inviteHouseInfo').innerHTML = infoHtml;
+
+            var canvas = document.getElementById('inviteQrCanvas');
+            var ctx = canvas.getContext('2d');
+            var w = canvas.width;
+            var h = canvas.height;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, w, h);
+
+            var cellSize = 6;
+            var cols = 30;
+            var rows = 30;
+            var offsetX = (w - cols * cellSize) / 2;
+            var offsetY = (h - rows * cellSize) / 2;
+
+            for (var r = 0; r < rows; r++) {
+                for (var c = 0; c < cols; c++) {
+                    if (Math.random() < 0.35) {
+                        ctx.fillStyle = '#333';
+                        ctx.fillRect(offsetX + c * cellSize, offsetY + r * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+
+            var cx = offsetX + 15 * cellSize, cy = offsetY + 15 * cellSize;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(cx - 10, cy - 10, 20, 20);
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 20px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('房', cx, cy);
         }
 
         function showToast(msg) {

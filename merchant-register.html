@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商家入驻 - 微信小程序</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #e8ecf1;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .page-wrapper {
+            width: 420px;
+            background: #f5f6f8;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            overflow: hidden;
+            min-height: 100vh;
+        }
+
+        /* 顶部导航栏 */
+        .nav-bar {
+            background: white;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .nav-back {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            color: #333;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .nav-back:hover { background: #f0f0f0; }
+
+        .nav-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .nav-placeholder {
+            width: 32px;
+        }
+
+        /* 表单区域 */
+        .form-content {
+            padding: 0 16px 40px;
+        }
+
+        /* 分组卡片 */
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 16px 16px 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-header .dot {
+            width: 4px;
+            height: 16px;
+            border-radius: 2px;
+            background: #4facfe;
+        }
+
+        /* 表单项 */
+        .form-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            transition: background 0.15s;
+        }
+
+        .form-item:last-child {
+            border-bottom: none;
+        }
+
+        .form-item.label-top {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .form-label {
+            font-size: 14px;
+            color: #333;
+            flex-shrink: 0;
+            width: 80px;
+            font-weight: 500;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: #ef4444;
+        }
+
+        .form-label-top {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .form-label-top.required::after {
+            content: ' *';
+            color: #ef4444;
+        }
+
+        .form-input-wrap {
+            flex: 1;
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            color: #333;
+            background: transparent;
+            padding: 0;
+        }
+
+        .form-input::placeholder {
+            color: #ccc;
+        }
+
+        .form-input.right-aligned {
+            text-align: right;
+        }
+
+        .form-arrow {
+            color: #ccc;
+            font-size: 14px;
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+
+        /* 商户类型下拉选择 */
+        .type-select-wrap {
+            position: relative;
+            flex: 1;
+        }
+
+        .type-select {
+            width: 100%;
+            padding: 8px 30px 8px 12px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+            background: white;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            transition: border-color 0.2s;
+        }
+
+        .type-select:focus {
+            border-color: #4facfe;
+        }
+
+        .type-select-arrow {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ccc;
+            pointer-events: none;
+            font-size: 14px;
+        }
+
+        /* 图片上传区域 */
+        .upload-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 4px 0;
+        }
+
+        .upload-box {
+            width: 80px;
+            height: 80px;
+            border: 1.5px dashed #d0d0d0;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafafa;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-box:hover {
+            border-color: #4facfe;
+            background: #f0f7ff;
+        }
+
+        .upload-plus {
+            font-size: 28px;
+            color: #ccc;
+            font-weight: 300;
+            line-height: 1;
+        }
+
+        .upload-text {
+            font-size: 11px;
+            color: #bbb;
+            margin-top: 2px;
+        }
+
+        .upload-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .upload-remove {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 22px;
+            height: 22px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            color: white;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .upload-box.has-image:hover .upload-remove {
+            display: flex;
+        }
+
+        /* 身份证上传 */
+        .id-card-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .id-card-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .id-card-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .id-card-upload {
+            width: 100%;
+            aspect-ratio: 1.58;
+            border: 1.5px dashed #d0d0d0;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafafa;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .id-card-upload:hover {
+            border-color: #4facfe;
+            background: #f0f7ff;
+        }
+
+        .id-card-upload .upload-plus {
+            font-size: 24px;
+        }
+
+        .id-card-upload .upload-text {
+            font-size: 10px;
+        }
+
+        .id-card-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .id-card-remove {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 22px;
+            height: 22px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            color: white;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+            line-height: 1;
+        }
+
+        .id-card-upload.has-image:hover .id-card-remove {
+            display: flex;
+        }
+
+        /* 营业时间 */
+        .time-picker-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .time-select {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+            background: white;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .time-select:focus {
+            border-color: #4facfe;
+        }
+
+        .time-separator {
+            font-size: 14px;
+            color: #999;
+        }
+
+        /* 备注 */
+        .remark-textarea {
+            width: 100%;
+            min-height: 100px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: #333;
+            resize: vertical;
+            outline: none;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            line-height: 1.6;
+        }
+
+        .remark-textarea:focus {
+            border-color: #4facfe;
+        }
+
+        .remark-textarea::placeholder {
+            color: #ccc;
+        }
+
+        .remark-count {
+            text-align: right;
+            font-size: 12px;
+            color: #bbb;
+            margin-top: 6px;
+        }
+
+        /* 提交按钮 */
+        .submit-area {
+            padding: 24px 16px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover {
+            box-shadow: 0 4px 16px rgba(79, 172, 254, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .submit-btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .submit-btn .btn-spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .submit-btn.loading .btn-spinner {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(0,0,0,0.75);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* 隐藏文件输入 */
+        .hidden-input {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 0; }
+            .page-wrapper { width: 100%; border-radius: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- 导航栏 -->
+        <div class="nav-bar">
+            <div class="nav-back" onclick="history.back()" title="返回">&lsaquo;</div>
+            <div class="nav-title">商家入驻</div>
+            <div class="nav-placeholder"></div>
+        </div>
+
+        <div class="form-content">
+            <!-- 商户信息 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="dot"></span>
+                    商户信息
+                </div>
+
+                <div class="form-item">
+                    <span class="form-label required">商户名称</span>
+                    <div class="form-input-wrap">
+                        <input type="text" class="form-input" id="merchantName" placeholder="请输入商户名称" maxlength="30">
+                    </div>
+                </div>
+
+                <div class="form-item label-top">
+                    <span class="form-label-top required">商户封面图</span>
+                    <div class="upload-area" id="coverUploadWrap">
+                        <div class="upload-box" id="coverUpload" onclick="triggerUpload('coverInput')">
+                            <span class="upload-plus">+</span>
+                            <span class="upload-text">封面图</span>
+                        </div>
+                        <input type="file" class="hidden-input" id="coverInput" accept="image/*" onchange="handleFileSelect(event, 'coverUpload', 'coverUploadWrap', 'cover')">
+                    </div>
+                </div>
+
+                <div class="form-item">
+                    <span class="form-label required">商户类型</span>
+                    <div class="type-select-wrap">
+                        <select class="type-select" id="merchantType">
+                            <option value="">请选择商户类型</option>
+                            <option value="neighborhood">邻里商圈</option>
+                            <option value="childcare">育儿托管</option>
+                            <option value="homeservice">到家服务</option>
+                            <option value="travel">旅游精选</option>
+                        </select>
+                        <span class="type-select-arrow">&#8250;</span>
+                    </div>
+                </div>
+
+                <div class="form-item">
+                    <span class="form-label required">商家地址</span>
+                    <div class="form-input-wrap" style="display: flex; align-items: center;">
+                        <input type="text" class="form-input" id="merchantAddress" placeholder="请选择商家地址" readonly onclick="showMockAddress()">
+                        <span class="form-arrow">&#8250;</span>
+                    </div>
+                </div>
+
+                <div class="form-item">
+                    <span class="form-label required">联系人</span>
+                    <div class="form-input-wrap">
+                        <input type="text" class="form-input" id="contactName" placeholder="请输入联系人姓名" maxlength="20">
+                    </div>
+                </div>
+
+                <div class="form-item">
+                    <span class="form-label required">联系电话</span>
+                    <div class="form-input-wrap">
+                        <input type="tel" class="form-input" id="contactPhone" placeholder="请输入手机号码" maxlength="11">
+                    </div>
+                </div>
+
+                <div class="form-item label-top">
+                    <span class="form-label-top required">营业时间</span>
+                    <div class="time-picker-group">
+                        <select class="time-select" id="openTime">
+                            <option value="">开始</option>
+                        </select>
+                        <span class="time-separator">至</span>
+                        <select class="time-select" id="closeTime">
+                            <option value="">结束</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 资质信息 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="dot" style="background: #f5576c;"></span>
+                    资质信息
+                </div>
+
+                <div class="form-item label-top">
+                    <span class="form-label-top required">营业执照</span>
+                    <div class="upload-area" id="licenseUploadWrap">
+                        <div class="upload-box" id="licenseUpload" onclick="triggerUpload('licenseInput')">
+                            <span class="upload-plus">+</span>
+                            <span class="upload-text">营业执照</span>
+                        </div>
+                        <input type="file" class="hidden-input" id="licenseInput" accept="image/*" onchange="handleFileSelect(event, 'licenseUpload', 'licenseUploadWrap', 'license')">
+                    </div>
+                </div>
+
+                <div class="form-item label-top">
+                    <span class="form-label-top required">法人身份证</span>
+                    <div class="id-card-group">
+                        <div class="id-card-item">
+                            <div class="id-card-label">人像面</div>
+                            <div class="id-card-upload" id="idFrontUpload" onclick="triggerUpload('idFrontInput')">
+                                <span class="upload-plus">+</span>
+                                <span class="upload-text">拍照或上传</span>
+                            </div>
+                            <input type="file" class="hidden-input" id="idFrontInput" accept="image/*" onchange="handleIdCardSelect(event, 'idFrontUpload', 'front')">
+                        </div>
+                        <div class="id-card-item">
+                            <div class="id-card-label">国徽面</div>
+                            <div class="id-card-upload" id="idBackUpload" onclick="triggerUpload('idBackInput')">
+                                <span class="upload-plus">+</span>
+                                <span class="upload-text">拍照或上传</span>
+                            </div>
+                            <input type="file" class="hidden-input" id="idBackInput" accept="image/*" onchange="handleIdCardSelect(event, 'idBackUpload', 'back')">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-item label-top">
+                    <span class="form-label-top required">店内照片</span>
+                    <div class="upload-area" id="storePhotosWrap">
+                        <div class="upload-box" id="storePhotoAdd" onclick="addStorePhoto()">
+                            <span class="upload-plus">+</span>
+                            <span class="upload-text">店内照片</span>
+                        </div>
+                        <input type="file" class="hidden-input" id="storePhotoInput" accept="image/*" onchange="handleStorePhotoSelect(event)">
+                    </div>
+                    <div style="font-size: 11px; color: #bbb; margin-top: 6px;">最多上传4张</div>
+                </div>
+            </div>
+
+            <!-- 备注信息 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span class="dot" style="background: #10b981;"></span>
+                    备注信息
+                </div>
+                <div style="padding: 14px 16px;">
+                    <textarea class="remark-textarea" id="remark" placeholder="请输入备注信息（选填），如特殊说明、期望合作方式等" maxlength="200" oninput="updateRemarkCount()"></textarea>
+                    <div class="remark-count"><span id="remarkCount">0</span>/200</div>
+                </div>
+            </div>
+
+            <!-- 提交按钮 -->
+            <div class="submit-area">
+                <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
+                    <span class="btn-spinner"></span>
+                    提交审核
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ===== 时间选项生成 =====
+        (function initTimeOptions() {
+            const hours = [];
+            for (let h = 0; h < 24; h++) {
+                hours.push(String(h).padStart(2, '0') + ':00');
+                hours.push(String(h).padStart(2, '0') + ':30');
+            }
+            hours.push('24:00');
+
+            const openSelect = document.getElementById('openTime');
+            const closeSelect = document.getElementById('closeTime');
+
+            hours.forEach(time => {
+                const opt1 = document.createElement('option');
+                opt1.value = time;
+                opt1.textContent = time;
+                openSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = time;
+                opt2.textContent = time;
+                closeSelect.appendChild(opt2);
+            });
+        })();
+
+        // ===== 文件上传触发 =====
+        function triggerUpload(inputId) {
+            document.getElementById(inputId).click();
+        }
+
+        // ===== 封面图/营业执照上传处理 =====
+        function handleFileSelect(event, uploadBoxId, wrapId, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const wrap = document.getElementById(wrapId);
+                const oldBox = document.getElementById(uploadBoxId);
+
+                // 创建预览图
+                const img = document.createElement('img');
+                img.className = 'upload-preview';
+                img.src = e.target.result;
+
+                const removeBtn = document.createElement('span');
+                removeBtn.className = 'upload-remove';
+                removeBtn.textContent = 'x';
+                removeBtn.onclick = function(ev) {
+                    ev.stopPropagation();
+                    // 恢复上传框
+                    oldBox.className = 'upload-box';
+                    oldBox.innerHTML = '<span class="upload-plus">+</span><span class="upload-text">' + (type === 'cover' ? '封面图' : '营业执照') + '</span>';
+                    oldBox.onclick = function() { triggerUpload(type === 'cover' ? 'coverInput' : 'licenseInput'); };
+                    document.getElementById(type === 'cover' ? 'coverInput' : 'licenseInput').value = '';
+                };
+
+                oldBox.className = 'upload-box has-image';
+                oldBox.innerHTML = '';
+                oldBox.appendChild(img);
+                oldBox.appendChild(removeBtn);
+                oldBox.onclick = function() {};
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ===== 身份证上传处理 =====
+        function handleIdCardSelect(event, uploadBoxId, side) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const box = document.getElementById(uploadBoxId);
+
+                const img = document.createElement('img');
+                img.className = 'id-card-preview';
+                img.src = e.target.result;
+
+                const removeBtn = document.createElement('span');
+                removeBtn.className = 'id-card-remove';
+                removeBtn.textContent = 'x';
+                removeBtn.onclick = function(ev) {
+                    ev.stopPropagation();
+                    box.className = 'id-card-upload';
+                    box.innerHTML = '<span class="upload-plus">+</span><span class="upload-text">拍照或上传</span>';
+                    box.onclick = function() { triggerUpload(side === 'front' ? 'idFrontInput' : 'idBackInput'); };
+                    document.getElementById(side === 'front' ? 'idFrontInput' : 'idBackInput').value = '';
+                };
+
+                box.className = 'id-card-upload has-image';
+                box.innerHTML = '';
+                box.appendChild(img);
+                box.appendChild(removeBtn);
+                box.onclick = function() {};
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ===== 店内照片上传 =====
+        let storePhotoCount = 0;
+        const STORE_PHOTO_MAX = 4;
+
+        function addStorePhoto() {
+            if (storePhotoCount >= STORE_PHOTO_MAX) {
+                showToast('最多上传4张店内照片');
+                return;
+            }
+            document.getElementById('storePhotoInput').click();
+        }
+
+        function handleStorePhotoSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            event.target.value = '';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const wrap = document.getElementById('storePhotosWrap');
+                const addBox = document.getElementById('storePhotoAdd');
+
+                const newBox = document.createElement('div');
+                newBox.className = 'upload-box has-image';
+                newBox.setAttribute('data-store-idx', storePhotoCount);
+
+                const img = document.createElement('img');
+                img.className = 'upload-preview';
+                img.src = e.target.result;
+
+                const removeBtn = document.createElement('span');
+                removeBtn.className = 'upload-remove';
+                removeBtn.textContent = 'x';
+                removeBtn.onclick = function(ev) {
+                    ev.stopPropagation();
+                    newBox.remove();
+                    storePhotoCount--;
+                    updateStorePhotoAddBtn();
+                };
+
+                newBox.appendChild(img);
+                newBox.appendChild(removeBtn);
+
+                wrap.insertBefore(newBox, addBox);
+                storePhotoCount++;
+                updateStorePhotoAddBtn();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateStorePhotoAddBtn() {
+            const addBox = document.getElementById('storePhotoAdd');
+            if (storePhotoCount >= STORE_PHOTO_MAX) {
+                addBox.style.display = 'none';
+            } else {
+                addBox.style.display = 'flex';
+            }
+        }
+
+        // ===== 模拟地址选择 =====
+        function showMockAddress() {
+            const mockDistricts = [
+                '广东省 广州市 天河区 珠江新城',
+                '广东省 广州市 海珠区 琶洲街道',
+                '广东省 广州市 越秀区 北京路',
+                '广东省 深圳市 南山区 科技园',
+                '广东省 深圳市 福田区 华强北',
+            ];
+            const random = mockDistricts[Math.floor(Math.random() * mockDistricts.length)];
+            document.getElementById('merchantAddress').value = random;
+            showToast('已选择地址（演示）');
+        }
+
+        // ===== 备注字数统计 =====
+        function updateRemarkCount() {
+            const count = document.getElementById('remark').value.length;
+            document.getElementById('remarkCount').textContent = count;
+        }
+
+        // ===== Toast 提示 =====
+        function showToast(msg, duration) {
+            duration = duration || 2000;
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        // ===== 提交 =====
+        function handleSubmit() {
+            const btn = document.getElementById('submitBtn');
+            btn.classList.add('loading');
+            btn.querySelector('.btn-spinner').style.display = 'inline-block';
+
+            setTimeout(() => {
+                btn.classList.remove('loading');
+                btn.querySelector('.btn-spinner').style.display = 'none';
+                showToast('提交成功', 1200);
+                setTimeout(() => {
+                    window.location.href = 'merchant-register-result.html';
+                }, 1400);
+            }, 1200);
+        }
+    </script>
+</body>
+</html>

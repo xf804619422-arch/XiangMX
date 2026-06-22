@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房屋卡片 - 微信小程序</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #e8ecf1;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .page-wrapper {
+            width: 420px;
+            background: #f5f6f8;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+
+        /* 模拟"我的"页面的模块标题 */
+        .section-label {
+            padding: 16px 20px 8px;
+            font-size: 13px;
+            color: #999;
+            font-weight: 500;
+        }
+
+        .module-area {
+            padding: 0 16px 20px;
+        }
+
+        /* ===== 房屋卡片 ===== */
+        .house-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .house-card.clickable {
+            cursor: pointer;
+        }
+        .house-card.clickable:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        }
+        .house-card.clickable:active {
+            transform: scale(0.985);
+        }
+
+        /* 已认证 */
+        .card-authed {
+            padding: 14px 16px;
+        }
+
+        .card-authed-top {
+            display: flex;
+            align-items: center;
+        }
+
+        .card-authed-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f2f2f2;
+        }
+
+        .card-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-right: 12px;
+        }
+
+        .card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-info-top {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .card-community {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .card-address {
+            font-size: 12px;
+            color: #888;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 2px;
+        }
+
+        .badge-auth {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 500;
+            background: #e6f7ee;
+            color: #10b981;
+            flex-shrink: 0;
+        }
+
+        .badge-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        .fund-amount {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ff6b6b;
+            line-height: 1;
+        }
+
+        .fund-amount .unit {
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 1px;
+        }
+
+        .card-authed-bottom .fund-label {
+            font-size: 13px;
+            color: #888;
+        }
+
+        /* 未认证 */
+        .card-unauth {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            background: #fafbfc;
+        }
+
+        .card-icon-unauth {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: #eef0f2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-right: 12px;
+        }
+
+        .card-unauth-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-unauth-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #bbb;
+            margin-bottom: 2px;
+        }
+
+        .card-unauth-hint {
+            font-size: 11px;
+            color: #ccc;
+        }
+
+        .card-unauth-arrow {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            font-size: 12px;
+            color: #4facfe;
+            font-weight: 500;
+            flex-shrink: 0;
+            transition: gap 0.2s;
+        }
+
+        .house-card.clickable:hover .card-unauth-arrow {
+            gap: 5px;
+        }
+
+        .house-card.clickable:hover .card-unauth-arrow span:last-child {
+            transform: translateX(2px);
+            transition: transform 0.2s;
+        }
+
+        /* 演示切换 */
+        .demo-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 10px 16px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+
+        .demo-switch {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #999;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 4px 10px;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .demo-switch:hover {
+            background: #f0f9ff;
+            color: #4facfe;
+        }
+
+        .demo-switch-icon {
+            font-size: 14px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.75);
+            color: white;
+            padding: 10px 22px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 460px) {
+            .page-wrapper { width: 100%; border-radius: 0; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- 模块标题 -->
+        <div class="section-label">我的房屋</div>
+
+        <!-- 卡片模块 -->
+        <div class="module-area" id="moduleArea"></div>
+
+        <!-- 演示切换 -->
+        <div class="module-area" id="demoBar"></div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var houseData = {
+            community: '阳光花园',
+            phase: '二期',
+            unit: '2单元',
+            floor: '12层',
+            room: '1203号'
+        };
+
+        var propertyFund = 2856.50;
+        var isAuthenticated = true;
+
+        function renderPage() {
+            var area = document.getElementById('moduleArea');
+            if (isAuthenticated) {
+                area.innerHTML = renderAuthenticatedCard();
+            } else {
+                area.innerHTML = renderUnauthenticatedCard();
+            }
+
+            var demo = document.getElementById('demoBar');
+            demo.innerHTML = ''
+                + '<div class="demo-bar">'
+                + '<button class="demo-switch" onclick="toggleAuth()">'
+                + '<span class="demo-switch-icon">&#x21C4;</span>'
+                + '<span>切换至' + (isAuthenticated ? '未认证' : '已认证') + '状态</span>'
+                + '</button>'
+                + '</div>';
+        }
+
+        function renderAuthenticatedCard() {
+            var address = houseData.community + ' - ' + houseData.phase + ' - ' + houseData.unit + ' - ' + houseData.floor + ' - ' + houseData.room;
+
+            return ''
+                + '<div class="house-card">'
+                + '<div class="card-authed">'
+
+                // 上排：图标 + 房屋信息
+                + '<div class="card-authed-top">'
+                + '<div class="card-icon-box">'
+                + '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+                + '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'
+                + '<polyline points="9 22 9 12 15 12 15 22"/>'
+                + '</svg>'
+                + '</div>'
+                + '<div class="card-info">'
+                + '<div class="card-info-top">'
+                + '<span class="card-community">' + houseData.community + '</span>'
+                + '<span class="badge-auth"><span class="badge-dot"></span>已认证</span>'
+                + '</div>'
+                + '<div class="card-address">' + address + '</div>'
+                + '</div>'
+                + '</div>'
+
+                // 下排：物业金
+                + '<div class="card-authed-bottom">'
+                + '<span class="fund-label">物业金</span>'
+                + '<div class="fund-amount">' + formatMoney(propertyFund) + '<span class="unit">元</span></div>'
+                + '</div>'
+
+                + '</div>'
+                + '</div>';
+        }
+
+        function renderUnauthenticatedCard() {
+            return ''
+                + '<div class="house-card clickable" onclick="goToMyHouse()">'
+                + '<div class="card-unauth">'
+
+                + '<div class="card-icon-unauth">'
+                + '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c0c0c0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+                + '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'
+                + '</svg>'
+                + '</div>'
+
+                + '<div class="card-unauth-text">'
+                + '<div class="card-unauth-title">房屋信息</div>'
+                + '<div class="card-unauth-hint">暂未认证，点击前往认证</div>'
+                + '</div>'
+
+                + '<div class="card-unauth-arrow">'
+                + '<span>前往认证</span>'
+                + '<span>&#x203A;</span>'
+                + '</div>'
+
+                + '</div>'
+                + '</div>';
+        }
+
+        function formatMoney(num) {
+            return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        function toggleAuth() {
+            isAuthenticated = !isAuthenticated;
+            renderPage();
+            showToast(isAuthenticated ? '已切换至【已认证】状态' : '已切换至【未认证】状态');
+        }
+
+        function goToMyHouse() {
+            window.location.href = 'my-house.html';
+        }
+
+        function showToast(msg) {
+            var t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(function() {
+                t.classList.remove('show');
+            }, 1500);
+        }
+
+        renderPage();
+    </script>
+</body>
+</html>

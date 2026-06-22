@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -717,7 +717,21 @@
             color: #333;
             font-weight: 500;
             margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+
+        .resident-role-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .role-owner { background: #dbeafe; color: #1d4ed8; }
+        .role-member { background: #f3e8ff; color: #7c3aed; }
 
         .resident-phone {
             font-size: 13px;
@@ -1756,20 +1770,20 @@
     <script>
         const mockResidents = {
             'r101': [
-                { id: 'U10001', name: '张伟', phone: '138****1234', avatar: null },
-                { id: 'U10002', name: '李娜', phone: '139****5678', avatar: null },
-                { id: 'U10003', name: '王强', phone: '137****9012', avatar: null }
+                { id: 'U10001', name: '张伟', phone: '138****1234', role: 'owner', avatar: null },
+                { id: 'U10002', name: '李娜', phone: '139****5678', role: 'member', avatar: null },
+                { id: 'U10003', name: '王强', phone: '137****9012', role: 'member', avatar: null }
             ],
             'r102': [
-                { id: 'U10004', name: '刘芳', phone: '136****3456', avatar: null },
-                { id: 'U10005', name: '陈明', phone: '135****7890', avatar: null }
+                { id: 'U10004', name: '刘芳', phone: '136****3456', role: 'owner', avatar: null },
+                { id: 'U10005', name: '陈明', phone: '135****7890', role: 'member', avatar: null }
             ],
             'r103': [
-                { id: 'U10006', name: '赵敏', phone: '158****2345', avatar: null }
+                { id: 'U10006', name: '赵敏', phone: '158****2345', role: 'owner', avatar: null }
             ],
             'r104': [
-                { id: 'U10007', name: '孙杰', phone: '159****6789', avatar: null },
-                { id: 'U10008', name: '周婷', phone: '157****0123', avatar: null }
+                { id: 'U10007', name: '孙杰', phone: '159****6789', role: 'owner', avatar: null },
+                { id: 'U10008', name: '周婷', phone: '157****0123', role: 'member', avatar: null }
             ]
         };
 
@@ -2149,16 +2163,18 @@
             if (residents.length === 0) {
                 residentList.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">暂无住户信息</div>';
             } else {
-                residentList.innerHTML = residents.map(r => `
-                    <div class="resident-card">
+                residentList.innerHTML = residents.map(r => {
+                    var roleLabel = (r.role === 'owner') ? '户主' : '成员';
+                    var roleClass = (r.role === 'owner') ? 'role-owner' : 'role-member';
+                    return `<div class="resident-card">
                         <div class="resident-avatar">${r.name.charAt(0)}</div>
                         <div class="resident-info">
-                            <div class="resident-name">${r.name}</div>
+                            <div class="resident-name">${r.name}<span class="resident-role-tag ${roleClass}">${roleLabel}</span></div>
                             <div class="resident-phone">${r.phone}</div>
                             <div class="resident-id">ID: ${r.id}</div>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
             }
 
             document.getElementById('detailEmpty').style.display = 'none';
@@ -2747,8 +2763,8 @@
         }
 
         function downloadTemplate() {
-            var csvContent = '\uFEFF用户手机号,住户姓名,小区名称,期数,楼栋,单元,楼层,房号\n';
-            csvContent += '13800000001,示例姓名,阳光花园,一期,1栋,1单元,1层,101号\n';
+            var csvContent = '\uFEFF用户手机号,住户姓名,住户身份,小区名称,期数,楼栋,单元,楼层,房号\n';
+            csvContent += '13800000001,示例姓名,户主,阳光花园,一期,1栋,1单元,1层,101号\n';
 
             var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
             var url = URL.createObjectURL(blob);
@@ -2793,7 +2809,7 @@
                 var failCount = 0;
                 for (var i = 1; i < lines.length; i++) {
                     var cols = lines[i].split(',');
-                    if (cols.length >= 8 && cols[0].trim()) {
+                    if (cols.length >= 9 && cols[0].trim()) {
                         successCount++;
                     } else {
                         failCount++;

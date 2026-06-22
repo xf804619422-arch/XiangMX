@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>审核结果 - 微信小程序</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #e8ecf1;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .page-wrapper {
+            width: 420px;
+            background: #f5f6f8;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            overflow: hidden;
+            min-height: 100vh;
+        }
+
+        /* 顶部导航栏 */
+        .nav-bar {
+            background: white;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-back {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            color: #333;
+            font-size: 18px;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .nav-back:hover { background: #f0f0f0; }
+
+        .nav-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .nav-placeholder {
+            width: 32px;
+        }
+
+        /* ===== 演示切换条 ===== */
+        .demo-toggle {
+            margin: 12px 16px 0;
+            background: #fffbe6;
+            border: 1px solid #f0d86e;
+            border-radius: 10px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .demo-toggle-label {
+            font-size: 12px;
+            color: #8b6914;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .demo-toggle-options {
+            display: flex;
+            gap: 6px;
+        }
+
+        .demo-toggle-btn {
+            padding: 6px 14px;
+            border-radius: 16px;
+            border: 1.5px solid #d0d0d0;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            color: #666;
+            font-weight: 500;
+            user-select: none;
+        }
+
+        .demo-toggle-btn:hover {
+            border-color: #999;
+            color: #333;
+        }
+
+        .demo-toggle-btn.active-pass {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+
+        .demo-toggle-btn.active-reject {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+        }
+
+        .demo-toggle-btn.active-reviewing {
+            background: #f59e0b;
+            border-color: #f59e0b;
+            color: white;
+        }
+
+        /* ===== 结果主体内容 ===== */
+        .result-content {
+            padding: 0 16px 30px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            margin-top: 12px;
+            padding: 32px 20px;
+            text-align: center;
+        }
+
+        /* 状态图标 */
+        .result-icon-wrap {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: popIn 0.4s ease;
+        }
+
+        .result-icon-wrap.pass {
+            background: #ecfdf5;
+        }
+
+        .result-icon-wrap.reject {
+            background: #fef2f2;
+        }
+
+        .result-icon-wrap.reviewing {
+            background: #fffbeb;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.15); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .result-icon {
+            width: 44px;
+            height: 44px;
+        }
+
+        .result-icon.pass-check {
+            position: relative;
+        }
+
+        .result-icon.pass-check::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 20px;
+            width: 14px;
+            height: 6px;
+            border-left: 4px solid #10b981;
+            border-bottom: 4px solid #10b981;
+            transform: rotate(-45deg);
+        }
+
+        .result-icon.pass-check::after {
+            content: '';
+            position: absolute;
+            left: 22px;
+            top: 10px;
+            width: 24px;
+            height: 6px;
+            border-left: 4px solid #10b981;
+            border-bottom: 4px solid #10b981;
+            transform: rotate(-45deg);
+        }
+
+        .result-icon.reject-x {
+            position: relative;
+        }
+
+        .result-icon.reject-x::before,
+        .result-icon.reject-x::after {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 19px;
+            width: 32px;
+            height: 4px;
+            background: #ef4444;
+            border-radius: 2px;
+        }
+
+        .result-icon.reject-x::before {
+            transform: rotate(45deg);
+        }
+
+        .result-icon.reject-x::after {
+            transform: rotate(-45deg);
+        }
+
+        /* 审核中时钟图标 */
+        .result-icon.reviewing-clock {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border: 4px solid #f59e0b;
+            border-radius: 50%;
+        }
+
+        .result-icon.reviewing-clock::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: 50%;
+            width: 3px;
+            height: 14px;
+            background: #f59e0b;
+            border-radius: 2px;
+            transform-origin: bottom center;
+            transform: translateX(-50%);
+        }
+
+        .result-icon.reviewing-clock::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: 50%;
+            width: 3px;
+            height: 10px;
+            background: #f59e0b;
+            border-radius: 2px;
+            transform-origin: bottom center;
+            transform: translateX(-50%) rotate(90deg);
+        }
+
+        /* 结果文字 */
+        .result-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .result-title.pass { color: #10b981; }
+        .result-title.reject { color: #ef4444; }
+        .result-title.reviewing { color: #f59e0b; }
+
+        .result-desc {
+            font-size: 14px;
+            color: #999;
+            line-height: 1.6;
+        }
+
+        /* 审核中提示 */
+        .reviewing-tip {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            text-align: left;
+        }
+
+        .reviewing-tip .tip-title {
+            font-size: 13px;
+            color: #b45309;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .reviewing-tip .tip-text {
+            font-size: 12px;
+            color: #92400e;
+            line-height: 1.6;
+        }
+
+        /* 信息摘要卡片 */
+        .info-card {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .info-card .info-title {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+            font-size: 13px;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row .info-label {
+            color: #999;
+            flex-shrink: 0;
+            margin-right: 12px;
+        }
+
+        .info-row .info-value {
+            color: #333;
+            text-align: right;
+            word-break: break-all;
+        }
+
+        /* 不通过原因 */
+        .reject-reason {
+            background: #fef2f2;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-top: 16px;
+            text-align: left;
+        }
+
+        .reject-reason .reason-title {
+            font-size: 13px;
+            color: #ef4444;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .reject-reason .reason-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .reject-reason .reason-list li {
+            font-size: 13px;
+            color: #666;
+            padding: 4px 0 4px 18px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .reject-reason .reason-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 11px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ef4444;
+            opacity: 0.6;
+        }
+
+        /* 时间线 */
+        .timeline {
+            margin-top: 16px;
+            text-align: left;
+            padding: 0 12px;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding-bottom: 16px;
+            position: relative;
+        }
+
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #d0d0d0;
+            flex-shrink: 0;
+            margin-top: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .timeline-dot.active {
+            background: #4facfe;
+        }
+
+        .timeline-dot.done {
+            background: #10b981;
+        }
+
+        .timeline-body {
+            flex: 1;
+        }
+
+        .timeline-title {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .timeline-time {
+            font-size: 12px;
+            color: #bbb;
+            margin-top: 2px;
+        }
+
+        /* 底部操作按钮 */
+        .action-area {
+            padding: 20px 16px 30px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            letter-spacing: 1px;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            box-shadow: 0 4px 16px rgba(79, 172, 254, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .action-btn.primary:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .action-btn.secondary {
+            background: white;
+            color: #4facfe;
+            border: 1.5px solid #4facfe;
+        }
+
+        .action-btn.secondary:hover {
+            background: #f0f7ff;
+        }
+
+        .action-btn.secondary:active {
+            transform: scale(0.98);
+        }
+
+        .action-btn.outline {
+            background: white;
+            color: #ef4444;
+            border: 1.5px solid #ef4444;
+        }
+
+        .action-btn.outline:hover {
+            background: #fef2f2;
+        }
+
+        .action-btn.outline:active {
+            transform: scale(0.98);
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 0; }
+            .page-wrapper { width: 100%; border-radius: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- 导航栏 -->
+        <div class="nav-bar">
+            <a class="nav-back" href="merchant-register.html" title="返回">&lsaquo;</a>
+            <div class="nav-title">审核结果</div>
+            <div class="nav-placeholder"></div>
+        </div>
+
+        <!-- 演示切换 -->
+        <div class="demo-toggle">
+            <span class="demo-toggle-label">演示切换：</span>
+            <div class="demo-toggle-options">
+                <span class="demo-toggle-btn active-reviewing" id="toggleReviewing" onclick="switchResult('reviewing')">审核中</span>
+                <span class="demo-toggle-btn" id="togglePass" onclick="switchResult('pass')">审核通过</span>
+                <span class="demo-toggle-btn" id="toggleReject" onclick="switchResult('reject')">审核不通过</span>
+            </div>
+        </div>
+
+        <!-- 审核中 -->
+        <div class="result-content" id="resultReviewing">
+            <div class="result-card">
+                <div class="result-icon-wrap reviewing">
+                    <div class="result-icon reviewing-clock"></div>
+                </div>
+                <div class="result-title reviewing">审核中</div>
+                <div class="result-desc">您的商家入驻申请正在审核中</div>
+
+                <div class="info-card">
+                    <div class="info-title">申请信息摘要</div>
+                    <div class="info-row">
+                        <span class="info-label">商户名称</span>
+                        <span class="info-value">星巴克咖啡（珠江新城店）</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">商户类型</span>
+                        <span class="info-value">邻里商圈</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">提交时间</span>
+                        <span class="info-value">2026-06-17 10:15:22</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 审核通过 -->
+        <div class="result-content" id="resultPass" style="display: none;">
+            <div class="result-card">
+                <div class="result-icon-wrap pass">
+                    <div class="result-icon pass-check"></div>
+                </div>
+                <div class="result-title pass">审核通过</div>
+                <div class="result-desc">恭喜，您的商家入驻申请已通过审核，<br>现在可以开始营业了</div>
+
+                <div class="info-card">
+                    <div class="info-title">入驻信息摘要</div>
+                    <div class="info-row">
+                        <span class="info-label">商户名称</span>
+                        <span class="info-value">星巴克咖啡（珠江新城店）</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">商户类型</span>
+                        <span class="info-value">邻里商圈</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">商家地址</span>
+                        <span class="info-value">广东省 广州市 天河区 珠江新城</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">审核时间</span>
+                        <span class="info-value">2026-06-17 14:30:00</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 审核不通过 -->
+        <div class="result-content" id="resultReject" style="display: none;">
+            <div class="result-card">
+                <div class="result-icon-wrap reject">
+                    <div class="result-icon reject-x"></div>
+                </div>
+                <div class="result-title reject">审核不通过</div>
+                <div class="result-desc">很遗憾，您的商家入驻申请未通过审核，<br>请联系客服咨询</div>
+
+                <div class="reject-reason">
+                    <div class="reason-title">不通过原因</div>
+                    <ul class="reason-list">
+                        <li>照片不清晰</li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-title">申请信息摘要</div>
+                    <div class="info-row">
+                        <span class="info-label">商户名称</span>
+                        <span class="info-value">星巴克咖啡（珠江新城店）</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">商户类型</span>
+                        <span class="info-value">邻里商圈</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">审核时间</span>
+                        <span class="info-value">2026-06-17 15:42:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-area" style="flex-direction: column;">
+                <button class="action-btn primary" onclick="window.location.href='merchant-register.html'">重新提交申请</button>
+                <button class="action-btn outline" onclick="alert('已联系平台客服（演示）')">联系客服</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchResult(type) {
+            const toggleReviewing = document.getElementById('toggleReviewing');
+            const togglePass = document.getElementById('togglePass');
+            const toggleReject = document.getElementById('toggleReject');
+            const contentReviewing = document.getElementById('resultReviewing');
+            const contentPass = document.getElementById('resultPass');
+            const contentReject = document.getElementById('resultReject');
+
+            // 重置所有
+            [toggleReviewing, togglePass, toggleReject].forEach(b => b.className = 'demo-toggle-btn');
+            [contentReviewing, contentPass, contentReject].forEach(c => c.style.display = 'none');
+
+            if (type === 'reviewing') {
+                toggleReviewing.className = 'demo-toggle-btn active-reviewing';
+                contentReviewing.style.display = 'block';
+            } else if (type === 'pass') {
+                togglePass.className = 'demo-toggle-btn active-pass';
+                contentPass.style.display = 'block';
+            } else {
+                toggleReject.className = 'demo-toggle-btn active-reject';
+                contentReject.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -504,6 +504,7 @@
                         <tr>
                             <th>申请人昵称</th>
                             <th>住户姓名</th>
+                            <th>住户身份</th>
                             <th>手机号</th>
                             <th>申请房屋信息</th>
                             <th>申请备注</th>
@@ -543,18 +544,18 @@
         var selectedRecord = null;
 
         var mockData = [
-            { id: 1, nickname: '张三', residentName: '张三', phone: '138****1234', community: '阳光花园', phase: '二期', building: '3栋', unit: '2单元', floor: '12层', room: '1203号', note: '我是业主，房产证编号：F-2024001', applyTime: '2026-05-30 14:30', status: 'pending' },
-            { id: 2, nickname: '李四', residentName: '李四', phone: '139****5678', community: '翡翠湾', phase: '一期', building: '5栋', unit: '1单元', floor: '8层', room: '802号', note: '住户认证', applyTime: '2026-05-30 11:20', status: 'pending' },
-            { id: 3, nickname: '王五', residentName: '王五', phone: '185****9012', community: '碧桂园', phase: '三期', building: '2栋', unit: '3单元', floor: '20层', room: '2001号', note: '新入住租户', applyTime: '2026-05-29 16:45', status: 'pending' },
-            { id: 4, nickname: '赵六', residentName: '赵晓明', phone: '136****3456', community: '阳光花园', phase: '一期', building: '1栋', unit: '2单元', floor: '5层', room: '501号', note: '', applyTime: '2026-05-29 09:15', status: 'approved' },
-            { id: 5, nickname: '孙七', residentName: '孙建国', phone: '158****7890', community: '绿城玫瑰园', phase: '一期', building: '4栋', unit: '1单元', floor: '15层', room: '1504号', note: '业主认证', applyTime: '2026-05-28 15:30', status: 'approved' },
-            { id: 6, nickname: '周八', residentName: '周文斌', phone: '137****2345', community: '翡翠湾', phase: '二期', building: '3栋', unit: '2单元', floor: '10层', room: '1003号', note: '申请材料不全', applyTime: '2026-05-28 10:00', status: 'rejected' },
-            { id: 7, nickname: '吴九', residentName: '吴志强', phone: '135****6789', community: '碧桂园', phase: '二期', building: '6栋', unit: '1单元', floor: '3层', room: '302号', note: '', applyTime: '2026-05-27 14:20', status: 'approved' },
-            { id: 8, nickname: '郑十', residentName: '郑大明', phone: '186****0123', community: '阳光花园', phase: '三期', building: '2栋', unit: '1单元', floor: '18层', room: '1805号', note: '租户认证，合同编号HT-202605', applyTime: '2026-05-27 11:00', status: 'pending' },
-            { id: 9, nickname: '钱十一', residentName: '钱丽华', phone: '133****4567', community: '绿城玫瑰园', phase: '二期', building: '1栋', unit: '3单元', floor: '7层', room: '701号', note: '', applyTime: '2026-05-26 16:30', status: 'rejected' },
-            { id: 10, nickname: '刘十二', residentName: '刘建国', phone: '159****8901', community: '阳光花园', phase: '一期', building: '4栋', unit: '2单元', floor: '11层', room: '1102号', note: '业主变更申请', applyTime: '2026-05-26 09:45', status: 'approved' },
-            { id: 11, nickname: '陈十三', residentName: '陈美玲', phone: '134****2345', community: '翡翠湾', phase: '三期', building: '2栋', unit: '1单元', floor: '6层', room: '601号', note: '', applyTime: '2026-05-25 15:00', status: 'pending' },
-            { id: 12, nickname: '林十四', residentName: '林家豪', phone: '188****5678', community: '碧桂园', phase: '一期', building: '3栋', unit: '2单元', floor: '14层', room: '1403号', note: '新购房认证', applyTime: '2026-05-25 10:30', status: 'approved' }
+            { id: 1, nickname: '张三', residentName: '张三', phone: '138****1234', community: '阳光花园', phase: '二期', building: '3栋', unit: '2单元', floor: '12层', room: '1203号', role: 'owner', note: '我是业主，房产证编号：F-2024001', applyTime: '2026-05-30 14:30', status: 'pending' },
+            { id: 2, nickname: '李四', residentName: '李四', phone: '139****5678', community: '翡翠湾', phase: '一期', building: '5栋', unit: '1单元', floor: '8层', room: '802号', role: 'member', note: '住户认证', applyTime: '2026-05-30 11:20', status: 'pending' },
+            { id: 3, nickname: '王五', residentName: '王五', phone: '185****9012', community: '碧桂园', phase: '三期', building: '2栋', unit: '3单元', floor: '20层', room: '2001号', role: 'member', note: '新入住租户', applyTime: '2026-05-29 16:45', status: 'pending' },
+            { id: 4, nickname: '赵六', residentName: '赵晓明', phone: '136****3456', community: '阳光花园', phase: '一期', building: '1栋', unit: '2单元', floor: '5层', room: '501号', role: 'owner', note: '', applyTime: '2026-05-29 09:15', status: 'approved' },
+            { id: 5, nickname: '孙七', residentName: '孙建国', phone: '158****7890', community: '绿城玫瑰园', phase: '一期', building: '4栋', unit: '1单元', floor: '15层', room: '1504号', role: 'owner', note: '业主认证', applyTime: '2026-05-28 15:30', status: 'approved' },
+            { id: 6, nickname: '周八', residentName: '周文斌', phone: '137****2345', community: '翡翠湾', phase: '二期', building: '3栋', unit: '2单元', floor: '10层', room: '1003号', role: 'member', note: '申请材料不全', applyTime: '2026-05-28 10:00', status: 'rejected' },
+            { id: 7, nickname: '吴九', residentName: '吴志强', phone: '135****6789', community: '碧桂园', phase: '二期', building: '6栋', unit: '1单元', floor: '3层', room: '302号', role: 'member', note: '', applyTime: '2026-05-27 14:20', status: 'approved' },
+            { id: 8, nickname: '郑十', residentName: '郑大明', phone: '186****0123', community: '阳光花园', phase: '三期', building: '2栋', unit: '1单元', floor: '18层', room: '1805号', role: 'member', note: '租户认证，合同编号HT-202605', applyTime: '2026-05-27 11:00', status: 'pending' },
+            { id: 9, nickname: '钱十一', residentName: '钱丽华', phone: '133****4567', community: '绿城玫瑰园', phase: '二期', building: '1栋', unit: '3单元', floor: '7层', room: '701号', role: 'member', note: '', applyTime: '2026-05-26 16:30', status: 'rejected' },
+            { id: 10, nickname: '刘十二', residentName: '刘建国', phone: '159****8901', community: '阳光花园', phase: '一期', building: '4栋', unit: '2单元', floor: '11层', room: '1102号', role: 'owner', note: '业主变更申请', applyTime: '2026-05-26 09:45', status: 'approved' },
+            { id: 11, nickname: '陈十三', residentName: '陈美玲', phone: '134****2345', community: '翡翠湾', phase: '三期', building: '2栋', unit: '1单元', floor: '6层', room: '601号', role: 'member', note: '', applyTime: '2026-05-25 15:00', status: 'pending' },
+            { id: 12, nickname: '林十四', residentName: '林家豪', phone: '188****5678', community: '碧桂园', phase: '一期', building: '3栋', unit: '2单元', floor: '14层', room: '1403号', role: 'owner', note: '新购房认证', applyTime: '2026-05-25 10:30', status: 'approved' }
         ];
 
         function toggleSubmenu(el) {
@@ -576,7 +577,7 @@
         function renderTable(data) {
             var tbody = document.getElementById('tableBody');
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><div class="empty-icon">📋</div>暂无数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><div class="empty-icon">📋</div>暂无数据</td></tr>';
                 return;
             }
 
@@ -584,9 +585,11 @@
             for (var i = 0; i < data.length; i++) {
                 var item = data[i];
                 var houseInfo = item.community + ' - ' + item.phase + ' - ' + item.building + ' - ' + item.unit + ' - ' + item.floor + ' - ' + item.room;
+                var roleText = item.role === 'owner' ? '户主' : (item.role === 'member' ? '成员' : '-');
                 html += '<tr>';
                 html += '<td>' + item.nickname + '</td>';
                 html += '<td>' + (item.residentName || '-') + '</td>';
+                html += '<td>' + roleText + '</td>';
                 html += '<td>' + item.phone + '</td>';
                 html += '<td style="max-width:200px;word-break:break-all;">' + houseInfo + '</td>';
                 html += '<td style="max-width:150px;word-break:break-all;">' + (item.note || '-') + '</td>';
@@ -714,6 +717,7 @@
             var info = '';
             info += '<p><span class="label">申请人：</span><span class="value">' + selectedRecord.nickname + '</span></p>';
             info += '<p><span class="label">住户姓名：</span><span class="value">' + (selectedRecord.residentName || '未填写') + '</span></p>';
+            info += '<p><span class="label">住户身份：</span><span class="value">' + (selectedRecord.role === 'owner' ? '户主' : (selectedRecord.role === 'member' ? '成员' : '未填写')) + '</span></p>';
             info += '<p><span class="label">手机号：</span><span class="value">' + selectedRecord.phone + '</span></p>';
             info += '<p><span class="label">小区：</span><span class="value">' + selectedRecord.community + '</span></p>';
             info += '<p><span class="label">期数：</span><span class="value">' + selectedRecord.phase + '</span></p>';

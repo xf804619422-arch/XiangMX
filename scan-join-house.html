@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扫码加入房屋 - 微信小程序</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #e8ecf1;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+
+        .phone-frame {
+            width: 420px;
+            min-height: 780px;
+            background: #f5f6f8;
+            border-radius: 32px;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            font-size: 12px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .nav-bar {
+            height: 48px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .nav-back {
+            position: absolute;
+            left: 16px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #333;
+            padding: 4px;
+        }
+
+        .nav-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .page-content {
+            padding: 16px;
+            max-height: 640px;
+            overflow-y: auto;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .section-subtitle {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group:last-child { margin-bottom: 0; }
+
+        .form-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+            display: block;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+            background: #fafbfc;
+            font-family: inherit;
+        }
+
+        .form-input:focus { outline: none; border-color: #4facfe; }
+
+        .form-select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+            background: #fafbfc;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%23999' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        .form-select:focus { outline: none; border-color: #4facfe; }
+
+        .btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+        .btn-outline {
+            background: white;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .btn-outline:hover { border-color: #4facfe; color: #4facfe; }
+
+        .house-info-display {
+            background: #f0f9ff;
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid #bae6fd;
+        }
+
+        .house-info-row {
+            display: flex;
+            align-items: center;
+            padding: 6px 0;
+        }
+
+        .house-info-label {
+            width: 72px;
+            font-size: 13px;
+            color: #999;
+            flex-shrink: 0;
+        }
+
+        .house-info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .action-area {
+            margin-top: 20px;
+        }
+
+        .agreement-text {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            margin-top: 12px;
+            line-height: 1.6;
+        }
+
+        .agreement-text a {
+            color: #4facfe;
+            text-decoration: none;
+        }
+
+        .toast {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.75);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .success-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+            color: white;
+        }
+
+        .success-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .success-text {
+            font-size: 13px;
+            color: #999;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 460px) {
+            .phone-frame { width: 100%; border-radius: 0; min-height: 100vh; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>●●●●○ ●</span>
+        </div>
+        <div class="nav-bar">
+            <button class="nav-back" onclick="history.back()">&#x2039;</button>
+            <span class="nav-title">扫码加入房屋</span>
+        </div>
+
+        <div class="page-content" id="pageContent"></div>
+
+        <div class="toast" id="toast"></div>
+    </div>
+
+    <script>
+        var houseData = {
+            community: '阳光花园',
+            phase: '二期',
+            building: '3栋',
+            unit: '2单元',
+            floor: '12层',
+            room: '1203号'
+        };
+
+        var hasSubmitted = false;
+
+        function renderPage() {
+            var html = '';
+
+            if (hasSubmitted) {
+                html += '<div class="section-card">';
+                html += '<div class="success-state">';
+                html += '<div class="success-icon">&#x2713;</div>';
+                html += '<div class="success-title">申请已提交</div>';
+                html += '<div class="success-text">';
+                html += '您的加入申请已成功提交<br>';
+                html += '请等待户主审核通过';
+                html += '</div>';
+                html += '</div>';
+                html += '</div>';
+            } else {
+                html += '<div class="section-card">';
+                html += '<div class="section-title">房屋信息</div>';
+                html += '<div class="section-subtitle">您正在申请加入以下房屋</div>';
+
+                html += '<div class="house-info-display">';
+                html += '<div class="house-info-row"><span class="house-info-label">小区</span><span class="house-info-value">' + houseData.community + '</span></div>';
+                html += '<div class="house-info-row"><span class="house-info-label">期数</span><span class="house-info-value">' + houseData.phase + '</span></div>';
+                html += '<div class="house-info-row"><span class="house-info-label">楼栋</span><span class="house-info-value">' + houseData.building + '</span></div>';
+                html += '<div class="house-info-row"><span class="house-info-label">单元</span><span class="house-info-value">' + houseData.unit + '</span></div>';
+                html += '<div class="house-info-row"><span class="house-info-label">层数</span><span class="house-info-value">' + houseData.floor + '</span></div>';
+                html += '<div class="house-info-row"><span class="house-info-label">房号</span><span class="house-info-value">' + houseData.room + '</span></div>';
+                html += '</div>';
+                html += '</div>';
+
+                html += '<div class="section-card">';
+                html += '<div class="section-title">填写信息</div>';
+                html += '<div class="section-subtitle">请完善您的个人信息以加入该房屋</div>';
+
+                html += '<div class="form-group">';
+                html += '<label class="form-label">住户姓名</label>';
+                html += '<input type="text" class="form-input" id="residentName" placeholder="请输入您的姓名">';
+                html += '</div>';
+
+                html += '<div class="form-group">';
+                html += '<label class="form-label">住户身份</label>';
+                html += '<select class="form-select" id="residentRole">';
+                html += '<option value="">请选择身份</option>';
+                html += '<option value="owner">户主</option>';
+                html += '<option value="member">成员</option>';
+                html += '</select>';
+                html += '</div>';
+
+                html += '<div class="action-area">';
+                html += '<button class="btn btn-primary" id="joinBtn" onclick="submitJoin()">加入</button>';
+                html += '</div>';
+
+                html += '<div style="margin-top:12px;">';
+                html += '<button class="btn btn-outline" onclick="history.back()">关闭</button>';
+                html += '</div>';
+                html += '</div>';
+            }
+
+            document.getElementById('pageContent').innerHTML = html;
+        }
+
+        function submitJoin() {
+            var nameEl = document.getElementById('residentName');
+            var roleEl = document.getElementById('residentRole');
+            var name = nameEl ? nameEl.value.trim() : '';
+            var role = roleEl ? roleEl.value : '';
+
+            if (!name) {
+                showToast('请输入住户姓名');
+                return;
+            }
+            if (!role) {
+                showToast('请选择住户身份');
+                return;
+            }
+
+            hasSubmitted = true;
+            renderPage();
+            showToast('申请已提交');
+        }
+
+        function showToast(msg) {
+            var t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(function() { t.classList.remove('show'); }, 1800);
+        }
+
+        renderPage();
+    </script>
+</body>
+</html>
