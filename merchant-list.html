@@ -790,35 +790,6 @@
             color: #999;
             margin: 0;
         }
-        .toggle-group {
-            display: flex;
-            gap: 0;
-            border: 1px solid #d9d9d9;
-            border-radius: 6px;
-            overflow: hidden;
-            width: fit-content;
-            margin-bottom: 12px;
-        }
-        .toggle-btn {
-            padding: 6px 18px;
-            font-size: 13px;
-            cursor: pointer;
-            border: none;
-            background: #fff;
-            color: #666;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-        .toggle-btn:not(:last-child) {
-            border-right: 1px solid #d9d9d9;
-        }
-        .toggle-btn.active {
-            background: #1a73e8;
-            color: #fff;
-        }
-        .toggle-btn:hover:not(.active) {
-            background: #f0f0f0;
-        }
         .refund-input-row {
             display: flex;
             align-items: center;
@@ -1272,22 +1243,11 @@
                                 <p class="config-desc">用户通过平台线上购物后获得的物业金奖励</p>
                             </div>
                         </div>
-                        <div class="toggle-group" id="addOnlineToggle">
-                            <button type="button" class="toggle-btn active" data-type="percent" onclick="switchAddRefundMode('online', 'percent')">按百分比</button>
-                            <button type="button" class="toggle-btn" data-type="fixed" onclick="switchAddRefundMode('online', 'fixed')">固定金额</button>
-                        </div>
-                        <div class="refund-input-row" id="addOnlinePercentGroup">
+                        <div class="refund-input-row">
                             <label>下单金额百分比</label>
                             <div class="input-unit">
                                 <input type="number" id="addOnlinePercent" value="1" min="0" max="100" step="0.1">
                                 <span class="unit">%</span>
-                            </div>
-                        </div>
-                        <div class="refund-input-row" id="addOnlineFixedGroup" style="display:none;">
-                            <label>固定奖励金额</label>
-                            <div class="input-unit">
-                                <input type="number" id="addOnlineFixed" value="5" min="0" step="0.01">
-                                <span class="unit">元</span>
                             </div>
                         </div>
                     </div>
@@ -1299,22 +1259,11 @@
                                 <p class="config-desc">用户通过线下扫码支付后获得的物业金奖励</p>
                             </div>
                         </div>
-                        <div class="toggle-group" id="addOfflineToggle">
-                            <button type="button" class="toggle-btn active" data-type="percent" onclick="switchAddRefundMode('offline', 'percent')">按百分比</button>
-                            <button type="button" class="toggle-btn" data-type="fixed" onclick="switchAddRefundMode('offline', 'fixed')">固定金额</button>
-                        </div>
-                        <div class="refund-input-row" id="addOfflinePercentGroup">
+                        <div class="refund-input-row">
                             <label>支付金额百分比</label>
                             <div class="input-unit">
                                 <input type="number" id="addOfflinePercent" value="0.5" min="0" max="100" step="0.1">
                                 <span class="unit">%</span>
-                            </div>
-                        </div>
-                        <div class="refund-input-row" id="addOfflineFixedGroup" style="display:none;">
-                            <label>固定奖励金额</label>
-                            <div class="input-unit">
-                                <input type="number" id="addOfflineFixed" value="3" min="0" step="0.01">
-                                <span class="unit">元</span>
                             </div>
                         </div>
                     </div>
@@ -1400,22 +1349,11 @@
                         <p class="config-desc">用户通过平台线上购物后获得的物业金奖励</p>
                     </div>
                 </div>
-                <div class="toggle-group" id="refundOnlineToggle">
-                    <button class="toggle-btn active" data-type="percent" onclick="switchRefundMode('online', 'percent')">按百分比</button>
-                    <button class="toggle-btn" data-type="fixed" onclick="switchRefundMode('online', 'fixed')">固定金额</button>
-                </div>
-                <div class="refund-input-row" id="refundOnlinePercentGroup">
+                <div class="refund-input-row">
                     <label>下单金额百分比</label>
                     <div class="input-unit">
                         <input type="number" id="refundOnlinePercent" value="1" min="0" max="100" step="0.1">
                         <span class="unit">%</span>
-                    </div>
-                </div>
-                <div class="refund-input-row" id="refundOnlineFixedGroup" style="display:none;">
-                    <label>固定奖励金额</label>
-                    <div class="input-unit">
-                        <input type="number" id="refundOnlineFixed" value="5" min="0" step="0.01">
-                        <span class="unit">元</span>
                     </div>
                 </div>
                 <div class="current-rule" id="refundOnlineRule">当前规则：<strong>按百分比 1.0%</strong> 奖励物业金</div>
@@ -1429,22 +1367,11 @@
                         <p class="config-desc">用户通过线下扫码支付后获得的物业金奖励</p>
                     </div>
                 </div>
-                <div class="toggle-group" id="refundOfflineToggle">
-                    <button class="toggle-btn active" data-type="percent" onclick="switchRefundMode('offline', 'percent')">按百分比</button>
-                    <button class="toggle-btn" data-type="fixed" onclick="switchRefundMode('offline', 'fixed')">固定金额</button>
-                </div>
-                <div class="refund-input-row" id="refundOfflinePercentGroup">
+                <div class="refund-input-row">
                     <label>支付金额百分比</label>
                     <div class="input-unit">
                         <input type="number" id="refundOfflinePercent" value="0.5" min="0" max="100" step="0.1">
                         <span class="unit">%</span>
-                    </div>
-                </div>
-                <div class="refund-input-row" id="refundOfflineFixedGroup" style="display:none;">
-                    <label>固定奖励金额</label>
-                    <div class="input-unit">
-                        <input type="number" id="refundOfflineFixed" value="3" min="0" step="0.01">
-                        <span class="unit">元</span>
                     </div>
                 </div>
                 <div class="current-rule" id="refundOfflineRule">当前规则：<strong>按百分比 0.5%</strong> 奖励物业金</div>
@@ -1812,7 +1739,8 @@ function openAddModal() {
         document.getElementById(k + 'Preview').innerHTML = '';
     });
     // 重置物业金返还比例
-    resetAddRefundForm();
+    document.getElementById('addOnlinePercent').value = 1;
+    document.getElementById('addOfflinePercent').value = 0.5;
     document.getElementById('addModal').style.display = 'flex';
 }
 
@@ -1834,20 +1762,10 @@ function openEditModal(idx) {
     // 回填物业金返还比例
     if (m.refundRatio) {
         if (m.refundRatio.online) {
-            switchAddRefundMode('online', m.refundRatio.online.mode);
-            if (m.refundRatio.online.mode === 'percent') {
-                document.getElementById('addOnlinePercent').value = m.refundRatio.online.value;
-            } else {
-                document.getElementById('addOnlineFixed').value = m.refundRatio.online.value;
-            }
+            document.getElementById('addOnlinePercent').value = m.refundRatio.online.value;
         }
         if (m.refundRatio.offline) {
-            switchAddRefundMode('offline', m.refundRatio.offline.mode);
-            if (m.refundRatio.offline.mode === 'percent') {
-                document.getElementById('addOfflinePercent').value = m.refundRatio.offline.value;
-            } else {
-                document.getElementById('addOfflineFixed').value = m.refundRatio.offline.value;
-            }
+            document.getElementById('addOfflinePercent').value = m.refundRatio.offline.value;
         }
     }
     document.getElementById('addModal').style.display = 'flex';
@@ -1861,15 +1779,9 @@ function closeAddModal() {
 function submitAddForm(e) {
     e.preventDefault();
 
-    // 读取物业金返还比例配置
-    const onlineMode = document.getElementById('addOnlinePercentGroup').style.display !== 'none' ? 'percent' : 'fixed';
-    const onlineValue = onlineMode === 'percent'
-        ? parseFloat(document.getElementById('addOnlinePercent').value) || 1
-        : parseFloat(document.getElementById('addOnlineFixed').value) || 5;
-    const offlineMode = document.getElementById('addOfflinePercentGroup').style.display !== 'none' ? 'percent' : 'fixed';
-    const offlineValue = offlineMode === 'percent'
-        ? parseFloat(document.getElementById('addOfflinePercent').value) || 0.5
-        : parseFloat(document.getElementById('addOfflineFixed').value) || 3;
+    // 读取物业金返还比例配置（仅按百分比）
+    const onlineValue = parseFloat(document.getElementById('addOnlinePercent').value) || 1;
+    const offlineValue = parseFloat(document.getElementById('addOfflinePercent').value) || 0.5;
 
     if (editMerchantIdx >= 0) {
         // 编辑模式
@@ -1881,8 +1793,8 @@ function submitAddForm(e) {
         m.address = document.getElementById('addAddress').value;
         m.hours = document.getElementById('addHours').value || '09:00 - 18:00';
         m.refundRatio = {
-            online: { mode: onlineMode, value: onlineValue },
-            offline: { mode: offlineMode, value: offlineValue }
+            online: { mode: 'percent', value: onlineValue },
+            offline: { mode: 'percent', value: offlineValue }
         };
         editMerchantIdx = -1;
         closeAddModal();
@@ -1907,8 +1819,8 @@ function submitAddForm(e) {
         idBack: document.getElementById('idBackPreview').children.length > 0,
         storePhoto: document.getElementById('storePhotoPreview').children.length > 0,
         refundRatio: {
-            online: { mode: onlineMode, value: onlineValue },
-            offline: { mode: offlineMode, value: offlineValue }
+            online: { mode: 'percent', value: onlineValue },
+            offline: { mode: 'percent', value: offlineValue }
         },
     };
     merchantData.push(newMerchant);
@@ -2135,87 +2047,26 @@ function closeRefundModal() {
 
 function resetRefundForm() {
     document.getElementById('refundOnlinePercent').value = 1;
-    document.getElementById('refundOnlineFixed').value = 5;
     document.getElementById('refundOfflinePercent').value = 0.5;
-    document.getElementById('refundOfflineFixed').value = 3;
-    // 重置 toggle 为百分比模式
-    switchRefundMode('online', 'percent');
-    switchRefundMode('offline', 'percent');
 }
 
-function switchRefundMode(channel, mode) {
-    const toggleGroup = document.getElementById('refund' + channel.charAt(0).toUpperCase() + channel.slice(1) + 'Toggle');
-    toggleGroup.querySelectorAll('.toggle-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.type === mode);
-    });
-    document.getElementById('refund' + channel.charAt(0).toUpperCase() + channel.slice(1) + 'PercentGroup').style.display = mode === 'percent' ? 'flex' : 'none';
-    document.getElementById('refund' + channel.charAt(0).toUpperCase() + channel.slice(1) + 'FixedGroup').style.display = mode === 'fixed' ? 'flex' : 'none';
-    // 更新规则预览
-    updateRefundRule(channel, mode);
-}
-
-function updateRefundRule(channel, mode) {
-    const label = channel === 'online' ? '线上购物' : '线下扫码支付';
-    let ruleText = '';
-    if (mode === 'percent') {
-        const val = parseFloat(document.getElementById('refund' + channel.charAt(0).toUpperCase() + channel.slice(1) + 'Percent').value) || 0;
-        ruleText = `按百分比 ${val}%`;
-    } else {
-        const val = parseFloat(document.getElementById('refund' + channel.charAt(0).toUpperCase() + channel.slice(1) + 'Fixed').value) || 0;
-        ruleText = `固定金额 ${val}元`;
-    }
-    document.getElementById('refund' + channel.charAt(0).toUpperCase() + channel.slice(1) + 'Rule').innerHTML = '当前规则：<strong>' + ruleText + '</strong> 奖励物业金';
-}
-
-// 监听输入变化实时更新规则预览
 ['online','offline'].forEach(ch => {
     const cap = ch.charAt(0).toUpperCase() + ch.slice(1);
-    ['Percent','Fixed'].forEach(suffix => {
-        const el = document.getElementById('refund' + cap + suffix);
-        if (el) {
-            el.addEventListener('input', function() {
-                const mode = document.getElementById('refund' + cap + 'PercentGroup').style.display !== 'none' ? 'percent' : 'fixed';
-                updateRefundRule(ch, mode);
-            });
-        }
-    });
+    const el = document.getElementById('refund' + cap + 'Percent');
+    if (el) {
+        el.addEventListener('input', function() {
+            const val = parseFloat(el.value) || 0;
+            document.getElementById('refund' + cap + 'Rule').innerHTML = '当前规则：<strong>按百分比 ' + val + '%</strong> 奖励物业金';
+        });
+    }
 });
-
-// 添加/编辑表单中的返还比例切换
-function switchAddRefundMode(channel, mode) {
-    const cap = channel.charAt(0).toUpperCase() + channel.slice(1);
-    const toggleGroup = document.getElementById('add' + cap + 'Toggle');
-    toggleGroup.querySelectorAll('.toggle-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.type === mode);
-    });
-    document.getElementById('add' + cap + 'PercentGroup').style.display = mode === 'percent' ? 'flex' : 'none';
-    document.getElementById('add' + cap + 'FixedGroup').style.display = mode === 'fixed' ? 'flex' : 'none';
-}
-
-function resetAddRefundForm() {
-    document.getElementById('addOnlinePercent').value = 1;
-    document.getElementById('addOnlineFixed').value = 5;
-    document.getElementById('addOfflinePercent').value = 0.5;
-    document.getElementById('addOfflineFixed').value = 3;
-    switchAddRefundMode('online', 'percent');
-    switchAddRefundMode('offline', 'percent');
-}
 
 function confirmRefundConfig() {
     if (!pendingApproveApp) return;
     const a = pendingApproveApp;
 
-    // 获取线上配置
-    const onlineMode = document.getElementById('refundOnlinePercentGroup').style.display !== 'none' ? 'percent' : 'fixed';
-    const onlineValue = onlineMode === 'percent'
-        ? parseFloat(document.getElementById('refundOnlinePercent').value) || 1
-        : parseFloat(document.getElementById('refundOnlineFixed').value) || 5;
-
-    // 获取线下配置
-    const offlineMode = document.getElementById('refundOfflinePercentGroup').style.display !== 'none' ? 'percent' : 'fixed';
-    const offlineValue = offlineMode === 'percent'
-        ? parseFloat(document.getElementById('refundOfflinePercent').value) || 0.5
-        : parseFloat(document.getElementById('refundOfflineFixed').value) || 3;
+    const onlineValue = parseFloat(document.getElementById('refundOnlinePercent').value) || 1;
+    const offlineValue = parseFloat(document.getElementById('refundOfflinePercent').value) || 0.5;
 
     const idx = appData.indexOf(a);
     appData.splice(idx, 1);
@@ -2230,8 +2081,8 @@ function confirmRefundConfig() {
         license: a.license, idFront: a.idFront,
         idBack: a.idBack, storePhoto: a.storePhoto,
         refundRatio: {
-            online: { mode: onlineMode, value: onlineValue },
-            offline: { mode: offlineMode, value: offlineValue }
+            online: { mode: 'percent', value: onlineValue },
+            offline: { mode: 'percent', value: offlineValue }
         }
     });
     nextId++;
@@ -2244,11 +2095,7 @@ function confirmRefundConfig() {
 // 格式化返还比例显示
 function formatRefundRatio(ratio) {
     if (!ratio) return '未配置';
-    if (ratio.mode === 'percent') {
-        return '按百分比 ' + ratio.value + '%';
-    } else {
-        return '固定金额 ' + ratio.value + '元';
-    }
+    return '按百分比 ' + ratio.value + '%';
 }
 
 function rejectApp(idx) {
