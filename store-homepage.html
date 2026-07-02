@@ -452,6 +452,94 @@
             opacity: 0.5;
         }
 
+        .merchant-info-tabs {
+            display: flex;
+            background: white;
+            margin: 0 16px 0;
+            border-radius: 12px 12px 0 0;
+            overflow: hidden;
+        }
+
+        .merchant-info-tab {
+            flex: 1;
+            padding: 12px 0;
+            border: none;
+            background: #f5f6f8;
+            font-size: 14px;
+            color: #888;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .merchant-info-tab.active {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .merchant-info-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: #667eea;
+            border-radius: 1px;
+        }
+
+        .merchant-info-panel {
+            background: white;
+            margin: 0 16px;
+            border-radius: 0 0 12px 12px;
+            padding: 16px 20px;
+            margin-bottom: 14px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 14px;
+        }
+
+        .info-row:last-child { border-bottom: none; }
+
+        .info-row .info-label {
+            width: 72px;
+            color: #999;
+            flex-shrink: 0;
+            font-size: 13px;
+        }
+
+        .info-row .info-value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .photo-item {
+            aspect-ratio: 4 / 3;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #e8ecf4, #dce1ed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .photo-item:active { opacity: 0.7; }
+
         @media (max-width: 460px) {
             .phone-frame {
                 width: 100%;
@@ -540,6 +628,26 @@
                 </div>
             </div>
 
+            <div class="merchant-info-tabs" id="merchantInfoTabs">
+                <button class="merchant-info-tab active" onclick="switchMerchantTab('info')">商户信息</button>
+                <button class="merchant-info-tab" onclick="switchMerchantTab('photo')">店内环境照</button>
+            </div>
+            <div class="merchant-info-panel" id="merchantInfoPanel">
+                <div class="info-row"><span class="info-label">商户类型</span><span class="info-value">餐饮夜宵</span></div>
+                <div class="info-row"><span class="info-label">营业时间</span><span class="info-value">09:00-12:00</span></div>
+                <div class="info-row"><span class="info-label">联系电话</span><span class="info-value">13875896541</span></div>
+            </div>
+            <div class="merchant-info-panel" id="merchantPhotoPanel" style="display:none;">
+                <div class="photo-grid">
+                    <div class="photo-item">🖼️</div>
+                    <div class="photo-item">🖼️</div>
+                    <div class="photo-item">🖼️</div>
+                    <div class="photo-item">🖼️</div>
+                    <div class="photo-item">🖼️</div>
+                    <div class="photo-item">🖼️</div>
+                </div>
+            </div>
+
             <div class="category-tabs" id="categoryTabs">
                 <button class="category-tab active" data-category="all" onclick="switchCategory('all', this)">全部</button>
                 <button class="category-tab" data-category="phone" onclick="switchCategory('phone', this)">手机</button>
@@ -581,6 +689,20 @@
         var currentCategory = 'all';
         var searchKeyword = '';
         var isFavorited = false;
+
+        function switchMerchantTab(tab) {
+            var tabs = document.getElementById('merchantInfoTabs').querySelectorAll('.merchant-info-tab');
+            tabs.forEach(function(t) { t.classList.remove('active'); });
+            if (tab === 'info') {
+                tabs[0].classList.add('active');
+                document.getElementById('merchantInfoPanel').style.display = 'block';
+                document.getElementById('merchantPhotoPanel').style.display = 'none';
+            } else {
+                tabs[1].classList.add('active');
+                document.getElementById('merchantInfoPanel').style.display = 'none';
+                document.getElementById('merchantPhotoPanel').style.display = 'block';
+            }
+        }
 
         function tagLabels(tags) {
             var map = { hot: { cls: 'tag-hot', text: '热销' }, new: { cls: 'tag-new', text: '新品' }, recommend: { cls: 'tag-recommend', text: '推荐' } };

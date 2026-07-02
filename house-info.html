@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -732,6 +732,46 @@
 
         .role-owner { background: #dbeafe; color: #1d4ed8; }
         .role-member { background: #f3e8ff; color: #7c3aed; }
+
+        .fee-status-card {
+            background: #f8fafc;
+            border: 1px solid #e8ecf1;
+            border-radius: 10px;
+            padding: 14px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .fee-status-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.12);
+        }
+
+        .fee-status-card .fee-month {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .fee-status-card .fee-status-tag {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .fee-paid { background: #d1fae5; color: #059669; border: 1px solid #a7f3d0; }
+        .fee-unpaid { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+
+        .fee-status-card .fee-amount {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
 
         .resident-phone {
             font-size: 13px;
@@ -1498,6 +1538,7 @@
                     <button class="btn btn-primary" onclick="openAdjustModal()">⚙️ 调整物业金</button>
                     <button class="btn btn-secondary" onclick="openPropertyFeeModal()">📋 物业金明细</button>
                     <button class="btn btn-secondary" onclick="openRoomInfoModal()">🏠 调整房屋信息</button>
+                    <button class="btn btn-secondary" onclick="openFeeStatusModal()">📅 物业费缴纳状态</button>
                 </div>
 
                 <div class="section-title">
@@ -1814,6 +1855,22 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="feeStatusModal">
+        <div class="modal" style="max-width:620px;">
+            <div class="modal-header">
+                <h3>📅 物业费缴纳状态</h3>
+                <button class="modal-close" onclick="closeFeeStatusModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div id="feeStatusCurrent" style="font-size:13px;color:#999;margin-bottom:16px;"></div>
+                <div id="feeStatusGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeFeeStatusModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const mockResidents = {
             'r101': [
@@ -1875,6 +1932,19 @@
             'r303': { area: 98.0, feeRate: 3.0 },
             'r304': { area: 98.0, feeRate: 3.0 }
         };
+        var roomFeeStatus = {};
+        function getRoomFeeStatus(roomId) {
+            if (!roomFeeStatus[roomId]) {
+                var meta = roomMeta[roomId] || { area: 0, feeRate: 0 };
+                var monthlyFee = meta.area * meta.feeRate;
+                var months = [];
+                for (var m = 1; m <= 12; m++) {
+                    months.push({ month: m, paid: m <= 5, amount: monthlyFee });
+                }
+                roomFeeStatus[roomId] = months;
+            }
+            return roomFeeStatus[roomId];
+        }
         let currentAdjustType = 'add';
         let commPage = 1;
         let commPageSize = 8;
@@ -2578,6 +2648,12 @@
             }
         });
 
+        document.getElementById('feeStatusModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeFeeStatusModal();
+            }
+        });
+
         document.getElementById('communityQrModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeCommunityQrModal();
@@ -2819,6 +2895,43 @@
             document.getElementById('roomFeeDisplay').innerHTML = (area > 0 && feeRate > 0) ? '¥' + monthlyFee.toFixed(2) + '<small>元</small>' : '--<small>元</small>';
 
             closeRoomInfoModal();
+        }
+
+        function openFeeStatusModal() {
+            if (!currentRoomId) return;
+            var roomLabel = document.querySelector(`.tree-item[data-id="${currentRoomId}"] .tree-label`).textContent;
+            document.getElementById('feeStatusCurrent').innerHTML = '当前房号：<strong>' + roomLabel + '</strong>';
+            renderFeeStatusGrid();
+            document.getElementById('feeStatusModal').classList.add('show');
+        }
+
+        function closeFeeStatusModal() {
+            document.getElementById('feeStatusModal').classList.remove('show');
+        }
+
+        function renderFeeStatusGrid() {
+            var months = getRoomFeeStatus(currentRoomId);
+            var grid = document.getElementById('feeStatusGrid');
+            var monthLabels = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+            var html = '';
+            for (var i = 0; i < months.length; i++) {
+                var m = months[i];
+                var cls = m.paid ? 'fee-paid' : 'fee-unpaid';
+                var label = m.paid ? '已缴纳' : '未缴纳';
+                html += '<div class="fee-status-card" onclick="toggleFeeMonth(' + i + ')">';
+                html += '<div class="fee-month">' + monthLabels[i] + '</div>';
+                html += '<span class="fee-status-tag ' + cls + '">' + label + '</span>';
+                html += '<div class="fee-amount">¥' + m.amount.toFixed(2) + '</div>';
+                html += '</div>';
+            }
+            grid.innerHTML = html;
+        }
+
+        function toggleFeeMonth(index) {
+            var months = roomFeeStatus[currentRoomId];
+            if (!months) return;
+            months[index].paid = !months[index].paid;
+            renderFeeStatusGrid();
         }
 
         function submitAddCommunity() {
