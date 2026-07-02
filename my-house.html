@@ -350,6 +350,29 @@
             margin-bottom: 16px;
         }
 
+        .first-order-banner {
+            background: linear-gradient(135deg, #fef3e2 0%, #fff7ed 100%);
+            border: 1px solid #fcd9a7;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .first-order-banner .banner-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .first-order-banner .banner-text {
+            font-size: 14px;
+            color: #b45309;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
         .tab-item {
             flex: 1;
             text-align: center;
@@ -980,6 +1003,11 @@
             html += '<button class="btn btn-warning btn-sm" onclick="startModify()">修改认证</button>';
             html += '<button class="btn btn-danger btn-sm" onclick="openModal(\'unbindModal\')">解绑房屋</button>';
             html += '</div>';
+            html += '</div>';
+
+            html += '<div class="first-order-banner">';
+            html += '<span class="banner-icon">🎁</span>';
+            html += '<span class="banner-text">首单福利！首单购物返还与支付金额价值相等的物业金</span>';
             html += '</div>';
 
             html += '<div class="tabs">';

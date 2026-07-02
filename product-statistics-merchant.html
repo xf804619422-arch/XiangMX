@@ -224,6 +224,29 @@
             border-bottom: 2px solid #eee;
         }
 
+        .product-table th.sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.15s;
+        }
+
+        .product-table th.sortable:hover {
+            color: #667eea;
+        }
+
+        .sort-arrow {
+            display: inline-block;
+            margin-left: 4px;
+            font-size: 11px;
+            line-height: 1;
+            vertical-align: middle;
+            color: #bbb;
+        }
+
+        .product-table th.sortable .sort-arrow.active {
+            color: #667eea;
+        }
+
         .product-table td {
             padding: 14px 16px;
             border-bottom: 1px solid #f0f0f0;
@@ -438,6 +461,7 @@
     <script>
         var overviewTimeRange = '7d';
         var rankType = 'favorites';
+        var sortOrder = 'desc';
         var currentPage = 1;
         var pageSize = 8;
         var totalPages = 10;
@@ -547,6 +571,7 @@
 
         function switchRankType(type) {
             rankType = type;
+            sortOrder = 'desc';
             var tabs = document.querySelectorAll('#rankTabs .rank-tab');
             tabs.forEach(function(tab) {
                 tab.classList.remove('active');
@@ -559,54 +584,70 @@
             loadRankingData();
         }
 
+        function toggleSortOrder() {
+            sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+            currentPage = 1;
+            updateTableHeaders();
+            loadRankingData();
+        }
+
         function updateTableHeaders() {
             var col1 = document.getElementById('rankCol1');
             var col2 = document.getElementById('rankCol2');
             var col3 = document.getElementById('rankCol3');
 
-            if (rankType === 'favorites') {
-                col1.textContent = '收藏数量';
-                col1.style.fontWeight = '700';
-                col1.style.color = '#667eea';
-                col2.textContent = '销量';
-                col2.style.fontWeight = '500';
-                col2.style.color = '#666';
-                col3.textContent = '销售额';
-                col3.style.fontWeight = '500';
-                col3.style.color = '#666';
-            } else if (rankType === 'amount') {
-                col2.textContent = '销量';
-                col2.style.fontWeight = '500';
-                col2.style.color = '#666';
-                col3.textContent = '销售额';
-                col3.style.fontWeight = '700';
-                col3.style.color = '#667eea';
-                col1.textContent = '收藏数量';
-                col1.style.fontWeight = '500';
-                col1.style.color = '#666';
-            } else {
-                col2.textContent = '销量';
-                col2.style.fontWeight = '700';
-                col2.style.color = '#667eea';
-                col1.textContent = '收藏数量';
-                col1.style.fontWeight = '500';
-                col1.style.color = '#666';
-                col3.textContent = '销售额';
-                col3.style.fontWeight = '500';
-                col3.style.color = '#666';
-            }
+            var labels = {
+                favorites: '收藏数量',
+                amount: '销售额',
+                volume: '销量'
+            };
+
+            var arrowHtml = function(colRank) {
+                if (colRank === rankType) {
+                    return '<span class="sort-arrow active">' + (sortOrder === 'desc' ? '▼' : '▲') + '</span>';
+                }
+                return '<span class="sort-arrow">▼</span>';
+            };
+
+            col1.innerHTML = labels.favorites + arrowHtml('favorites');
+            col1.className = 'sortable';
+            col1.style.fontWeight = rankType === 'favorites' ? '700' : '500';
+            col1.style.color = rankType === 'favorites' ? '#667eea' : '#666';
+            col1.onclick = function() {
+                if (rankType === 'favorites') { toggleSortOrder(); }
+                else { switchRankType('favorites'); }
+            };
+
+            col2.innerHTML = labels.volume + arrowHtml('volume');
+            col2.className = 'sortable';
+            col2.style.fontWeight = rankType === 'volume' ? '700' : '500';
+            col2.style.color = rankType === 'volume' ? '#667eea' : '#666';
+            col2.onclick = function() {
+                if (rankType === 'volume') { toggleSortOrder(); }
+                else { switchRankType('volume'); }
+            };
+
+            col3.innerHTML = labels.amount + arrowHtml('amount');
+            col3.className = 'sortable';
+            col3.style.fontWeight = rankType === 'amount' ? '700' : '500';
+            col3.style.color = rankType === 'amount' ? '#667eea' : '#666';
+            col3.onclick = function() {
+                if (rankType === 'amount') { toggleSortOrder(); }
+                else { switchRankType('amount'); }
+            };
         }
 
         function loadRankingData() {
             totalPages = Math.ceil(mockProducts.length / pageSize);
 
             var sorted = mockProducts.slice();
+            var asc = sortOrder === 'asc';
             if (rankType === 'favorites') {
-                sorted.sort(function(a, b) { return b.favorites - a.favorites; });
+                sorted.sort(function(a, b) { return asc ? a.favorites - b.favorites : b.favorites - a.favorites; });
             } else if (rankType === 'amount') {
-                sorted.sort(function(a, b) { return b.amount - a.amount; });
+                sorted.sort(function(a, b) { return asc ? a.amount - b.amount : b.amount - a.amount; });
             } else {
-                sorted.sort(function(a, b) { return b.sales - a.sales; });
+                sorted.sort(function(a, b) { return asc ? a.sales - b.sales : b.sales - a.sales; });
             }
 
             var start = (currentPage - 1) * pageSize;

@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>浏览记录 - 微信小程序</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #e8ecf1;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+
+        .phone-frame {
+            width: 420px;
+            min-height: 780px;
+            background: #f5f6f8;
+            border-radius: 32px;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            height: 44px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            font-size: 12px;
+            color: #333;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .status-bar .time { font-size: 13px; }
+        .status-bar .icons { display: flex; gap: 6px; align-items: center; }
+
+        /* 导航栏 */
+        .nav-bar {
+            height: 48px;
+            background: white;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            border-bottom: 1px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+
+        .nav-back {
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            font-size: 18px;
+            color: #333;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .nav-back:hover { background: #f0f0f0; }
+
+        .nav-title {
+            flex: 1;
+            text-align: center;
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+            margin-right: 32px;
+        }
+
+        .nav-action {
+            font-size: 14px;
+            color: #4facfe;
+            cursor: pointer;
+            flex-shrink: 0;
+            padding: 6px 10px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+        }
+
+        .nav-action:hover { background: #f0f9ff; }
+
+        /* 滚动内容区 */
+        .scroll-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 12px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 40px;
+            text-align: center;
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #eef2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .empty-icon svg {
+            width: 40px;
+            height: 40px;
+            color: #c0c8e0;
+        }
+
+        .empty-text {
+            font-size: 15px;
+            color: #999;
+            margin-bottom: 6px;
+        }
+
+        .empty-sub {
+            font-size: 13px;
+            color: #bbb;
+        }
+
+        /* 日期分组 */
+        .date-group {
+            margin: 0 12px;
+        }
+
+        .date-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 4px 10px 4px;
+        }
+
+        .date-line {
+            flex: 1;
+            height: 1px;
+            background: #e5e5e5;
+        }
+
+        .date-label {
+            font-size: 13px;
+            color: #999;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .date-label:first-child ~ .date-line:first-of-type {
+            display: none;
+        }
+
+        /* 商品卡片 */
+        .history-item {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1.5px solid transparent;
+        }
+
+        .history-item:hover {
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        .history-item.edit-mode {
+            border-color: #d0d5dd;
+        }
+
+        .item-checkbox {
+            display: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid #d0d5dd;
+            flex-shrink: 0;
+            align-self: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .item-checkbox.visible {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item-checkbox.checked {
+            background: #4facfe;
+            border-color: #4facfe;
+        }
+
+        .item-checkbox.checked::after {
+            content: '';
+            width: 6px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg) translateY(-1px);
+        }
+
+        .item-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            background: #f0f2f5;
+            flex-shrink: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-image .img-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+        }
+
+        .item-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .item-name {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+            line-height: 1.4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            word-break: break-all;
+        }
+
+        .item-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .item-price-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 4px;
+        }
+
+        .item-price {
+            font-size: 18px;
+            color: #e74c3c;
+            font-weight: 700;
+        }
+
+        .item-price .unit {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .item-buy-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-family: inherit;
+            transition: opacity 0.2s;
+        }
+
+        .item-buy-btn:hover {
+            opacity: 0.9;
+        }
+
+        .item-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.05);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #ccc;
+            transition: all 0.2s;
+        }
+
+        .item-delete:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .item-delete.edit-hidden {
+            display: none;
+        }
+
+        /* 底部操作栏 */
+        .bottom-bar {
+            background: white;
+            border-top: 1px solid #f0f0f0;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .bottom-bar.edit-bar {
+            display: none;
+        }
+
+        .bottom-bar.edit-bar.active {
+            display: flex;
+        }
+
+        .bottom-bar.default-bar.edit-hidden {
+            display: none;
+        }
+
+        .select-all {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+        }
+
+        .select-all-circle {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid #d0d5dd;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .select-all-circle.all-checked {
+            background: #4facfe;
+            border-color: #4facfe;
+        }
+
+        .select-all-circle.all-checked::after {
+            content: '';
+            width: 6px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            position: absolute;
+            top: 3px;
+            left: 6px;
+            transform: rotate(45deg);
+        }
+
+        .btn-delete-selected {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-delete-selected:hover { background: #dc2626; }
+        .btn-delete-selected:disabled {
+            background: #fca5a5;
+            cursor: not-allowed;
+        }
+
+        .btn-clear-all {
+            width: 100%;
+            background: white;
+            color: #666;
+            border: 1px solid #e5e5e5;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-clear-all:hover {
+            background: #fef2f2;
+            color: #ef4444;
+            border-color: #fecaca;
+        }
+
+        .bottom-btn-wrap {
+            padding: 0 12px 12px;
+        }
+
+        /* 确认弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-dialog {
+            background: white;
+            border-radius: 16px;
+            width: 300px;
+            overflow: hidden;
+            transform: scale(0.9);
+            transition: transform 0.25s;
+        }
+
+        .modal-overlay.show .modal-dialog {
+            transform: scale(1);
+        }
+
+        .modal-body {
+            padding: 28px 24px 20px;
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 17px;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .modal-desc {
+            font-size: 14px;
+            color: #999;
+            line-height: 1.5;
+        }
+
+        .modal-actions {
+            display: flex;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            background: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+
+        .modal-btn:hover { background: #f5f5f5; }
+        .modal-btn.cancel { color: #666; }
+        .modal-btn.confirm { color: #ef4444; font-weight: 600; }
+
+        .modal-btn + .modal-btn {
+            border-left: 1px solid #f0f0f0;
+        }
+
+        /* Toast提示 */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(0,0,0,0.75);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 2000;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 0; }
+            .phone-frame {
+                width: 100%;
+                min-height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <span class="time">9:41</span>
+            <span class="icons">
+                <svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="2" height="4" rx="0.5" fill="#333"/><rect x="3" y="5" width="2" height="6" rx="0.5" fill="#333"/><rect x="6" y="3" width="2" height="8" rx="0.5" fill="#333"/><rect x="9" y="0" width="2" height="11" rx="0.5" fill="#333"/></svg>
+                <span style="font-size:11px">5G</span>
+                <svg width="24" height="11" viewBox="0 0 24 11"><rect x="0" y="2" width="20" height="7" rx="1.5" stroke="#333" stroke-width="1" fill="none"/><rect x="2" y="4" width="16" height="3" rx="0.5" fill="#333"/><rect x="21" y="0" width="2" height="4" rx="1" fill="#333"/></svg>
+            </span>
+        </div>
+
+        <!-- 导航栏 -->
+        <div class="nav-bar">
+            <div class="nav-back" onclick="history.back()" title="返回">
+                <svg width="12" height="20" viewBox="0 0 12 20"><path d="M10 2L2 10l8 8" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="nav-title">浏览记录</div>
+            <button class="nav-action" id="btnEdit" onclick="toggleEditMode()">管理</button>
+        </div>
+
+        <!-- 滚动内容区 -->
+        <div class="scroll-content" id="scrollContent">
+            <!-- 日期分组：今天 -->
+            <div class="date-group" data-date="今天">
+                <div class="date-header">
+                    <span class="date-label">今天</span>
+                    <span class="date-line"></span>
+                </div>
+
+                <!-- 商品1 -->
+                <div class="history-item" data-id="1">
+                    <div class="item-checkbox" onclick="toggleItemCheck(this)"></div>
+                    <div class="item-image">
+                        <div class="img-placeholder">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#c0c8e0" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                        </div>
+                    </div>
+                    <div class="item-info">
+                        <div class="item-name">夏季纯棉男士短袖T恤 简约百搭圆领透气休闲上衣</div>
+                        <div class="item-meta">
+                            <span>已售 2.3万+</span>
+                            <span>好评率 98%</span>
+                        </div>
+                        <div class="item-price-row">
+                            <span class="item-price"><span class="unit">¥</span>89.00</span>
+                            <button class="item-buy-btn">立即购买</button>
+                        </div>
+                    </div>
+                    <button class="item-delete" onclick="deleteItem(event, this)" title="删除">×</button>
+                </div>
+
+                <!-- 商品2 -->
+                <div class="history-item" data-id="2">
+                    <div class="item-checkbox" onclick="toggleItemCheck(this)"></div>
+                    <div class="item-image">
+                        <div class="img-placeholder">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#c0c8e0" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                        </div>
+                    </div>
+                    <div class="item-info">
+                        <div class="item-name">无线蓝牙耳机 降噪长续航 运动跑步入耳式</div>
+                        <div class="item-meta">
+                            <span>已售 8,562</span>
+                            <span>好评率 96%</span>
+                        </div>
+                        <div class="item-price-row">
+                            <span class="item-price"><span class="unit">¥</span>159.00</span>
+                            <button class="item-buy-btn">立即购买</button>
+                        </div>
+                    </div>
+                    <button class="item-delete" onclick="deleteItem(event, this)" title="删除">×</button>
+                </div>
+            </div>
+
+            <!-- 日期分组：昨天 -->
+            <div class="date-group" data-date="昨天">
+                <div class="date-header">
+                    <span class="date-label">昨天</span>
+                    <span class="date-line"></span>
+                </div>
+
+                <!-- 商品3 -->
+                <div class="history-item" data-id="3">
+                    <div class="item-checkbox" onclick="toggleItemCheck(this)"></div>
+                    <div class="item-image">
+                        <div class="img-placeholder">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#c0c8e0" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                        </div>
+                    </div>
+                    <div class="item-info">
+                        <div class="item-name">大容量户外运动水杯 Tritan材质便携防漏 1500ml</div>
+                        <div class="item-meta">
+                            <span>已售 1.5万+</span>
+                            <span>好评率 99%</span>
+                        </div>
+                        <div class="item-price-row">
+                            <span class="item-price"><span class="unit">¥</span>49.90</span>
+                            <button class="item-buy-btn">立即购买</button>
+                        </div>
+                    </div>
+                    <button class="item-delete" onclick="deleteItem(event, this)" title="删除">×</button>
+                </div>
+            </div>
+
+            <!-- 日期分组：更早 -->
+            <div class="date-group" data-date="更早">
+                <div class="date-header">
+                    <span class="date-label">6月28日</span>
+                    <span class="date-line"></span>
+                </div>
+
+                <!-- 商品4 -->
+                <div class="history-item" data-id="4">
+                    <div class="item-checkbox" onclick="toggleItemCheck(this)"></div>
+                    <div class="item-image">
+                        <div class="img-placeholder">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#c0c8e0" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                        </div>
+                    </div>
+                    <div class="item-info">
+                        <div class="item-name">简约北欧风台灯 LED护眼学习办公床头阅读灯</div>
+                        <div class="item-meta">
+                            <span>已售 3,210</span>
+                            <span>好评率 97%</span>
+                        </div>
+                        <div class="item-price-row">
+                            <span class="item-price"><span class="unit">¥</span>128.00</span>
+                            <button class="item-buy-btn">立即购买</button>
+                        </div>
+                    </div>
+                    <button class="item-delete" onclick="deleteItem(event, this)" title="删除">×</button>
+                </div>
+
+                <!-- 商品5 -->
+                <div class="history-item" data-id="5">
+                    <div class="item-checkbox" onclick="toggleItemCheck(this)"></div>
+                    <div class="item-image">
+                        <div class="img-placeholder">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#c0c8e0" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                        </div>
+                    </div>
+                    <div class="item-info">
+                        <div class="item-name">智能手环 心率血氧监测 运动健康防水 多功能</div>
+                        <div class="item-meta">
+                            <span>已售 5.6万+</span>
+                            <span>好评率 95%</span>
+                        </div>
+                        <div class="item-price-row">
+                            <span class="item-price"><span class="unit">¥</span>199.00</span>
+                            <button class="item-buy-btn">立即购买</button>
+                        </div>
+                    </div>
+                    <button class="item-delete" onclick="deleteItem(event, this)" title="删除">×</button>
+                </div>
+
+                <div class="date-header">
+                    <span class="date-label">6月25日</span>
+                    <span class="date-line"></span>
+                </div>
+
+                <!-- 商品6 -->
+                <div class="history-item" data-id="6">
+                    <div class="item-checkbox" onclick="toggleItemCheck(this)"></div>
+                    <div class="item-image">
+                        <div class="img-placeholder">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#c0c8e0" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                        </div>
+                    </div>
+                    <div class="item-info">
+                        <div class="item-name">透气网面运动鞋 轻便减震跑步鞋 男女同款</div>
+                        <div class="item-meta">
+                            <span>已售 1.2万+</span>
+                            <span>好评率 98%</span>
+                        </div>
+                        <div class="item-price-row">
+                            <span class="item-price"><span class="unit">¥</span>259.00</span>
+                            <button class="item-buy-btn">立即购买</button>
+                        </div>
+                    </div>
+                    <button class="item-delete" onclick="deleteItem(event, this)" title="删除">×</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部操作栏：默认 -->
+        <div class="bottom-bar default-bar" id="defaultBar">
+            <div class="bottom-btn-wrap" style="width:100%">
+                <button class="btn-clear-all" onclick="showClearConfirm()">清空全部浏览记录</button>
+            </div>
+        </div>
+
+        <!-- 底部操作栏：编辑模式 -->
+        <div class="bottom-bar edit-bar" id="editBar">
+            <button class="select-all" onclick="toggleSelectAll()">
+                <span class="select-all-circle" id="selectAllCircle"></span>
+                全选
+            </button>
+            <button class="btn-delete-selected" id="btnDeleteSelected" disabled onclick="deleteSelected()">
+                删除
+            </button>
+        </div>
+    </div>
+
+    <!-- 确认弹窗 -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-dialog">
+            <div class="modal-body">
+                <div class="modal-title">清空浏览记录</div>
+                <div class="modal-desc">确定要清空全部浏览记录吗？<br>清空后无法恢复。</div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" onclick="closeModal()">取消</button>
+                <button class="modal-btn confirm" onclick="confirmClear()">确定清空</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let isEditMode = false;
+        let checkedIds = new Set();
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const btnEdit = document.getElementById('btnEdit');
+            const defaultBar = document.getElementById('defaultBar');
+            const editBar = document.getElementById('editBar');
+            const items = document.querySelectorAll('.history-item');
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            const deleteBtns = document.querySelectorAll('.item-delete');
+            const selectAllCircle = document.getElementById('selectAllCircle');
+
+            if (isEditMode) {
+                btnEdit.textContent = '完成';
+                defaultBar.classList.add('edit-hidden');
+                editBar.classList.add('active');
+                items.forEach(item => item.classList.add('edit-mode'));
+                checkboxes.forEach(cb => cb.classList.add('visible'));
+                deleteBtns.forEach(btn => btn.classList.add('edit-hidden'));
+                checkedIds.clear();
+                updateSelectAllState();
+                updateDeleteBtn();
+            } else {
+                btnEdit.textContent = '管理';
+                defaultBar.classList.remove('edit-hidden');
+                editBar.classList.remove('active');
+                items.forEach(item => item.classList.remove('edit-mode'));
+                checkboxes.forEach(cb => {
+                    cb.classList.remove('visible', 'checked');
+                });
+                deleteBtns.forEach(btn => btn.classList.remove('edit-hidden'));
+                checkedIds.clear();
+                selectAllCircle.classList.remove('all-checked');
+            }
+        }
+
+        function toggleItemCheck(checkbox) {
+            if (!isEditMode) return;
+            const item = checkbox.closest('.history-item');
+            const id = item.dataset.id;
+
+            if (checkedIds.has(id)) {
+                checkedIds.delete(id);
+                checkbox.classList.remove('checked');
+            } else {
+                checkedIds.add(id);
+                checkbox.classList.add('checked');
+            }
+
+            updateSelectAllState();
+            updateDeleteBtn();
+        }
+
+        function toggleSelectAll() {
+            const items = document.querySelectorAll('.history-item');
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            const allChecked = checkedIds.size === items.length;
+
+            if (allChecked) {
+                checkedIds.clear();
+                checkboxes.forEach(cb => cb.classList.remove('checked'));
+            } else {
+                items.forEach(item => {
+                    checkedIds.add(item.dataset.id);
+                });
+                checkboxes.forEach(cb => cb.classList.add('checked'));
+            }
+
+            updateSelectAllState();
+            updateDeleteBtn();
+        }
+
+        function updateSelectAllState() {
+            const items = document.querySelectorAll('.history-item');
+            const selectAllCircle = document.getElementById('selectAllCircle');
+            if (checkedIds.size === items.length && items.length > 0) {
+                selectAllCircle.classList.add('all-checked');
+            } else {
+                selectAllCircle.classList.remove('all-checked');
+            }
+        }
+
+        function updateDeleteBtn() {
+            const btn = document.getElementById('btnDeleteSelected');
+            btn.disabled = checkedIds.size === 0;
+            btn.textContent = checkedIds.size > 0 ? `删除 (${checkedIds.size})` : '删除';
+        }
+
+        function deleteSelected() {
+            if (checkedIds.size === 0) return;
+
+            checkedIds.forEach(id => {
+                const item = document.querySelector(`.history-item[data-id="${id}"]`);
+                if (item) {
+                    item.style.transition = 'all 0.3s';
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateX(40px)';
+                    item.style.maxHeight = item.offsetHeight + 'px';
+                    setTimeout(() => {
+                        item.style.maxHeight = '0';
+                        item.style.padding = '0';
+                        item.style.margin = '0';
+                        item.style.border = 'none';
+                        item.style.overflow = 'hidden';
+                    }, 200);
+                    setTimeout(() => {
+                        item.remove();
+                        removeEmptyGroups();
+                    }, 500);
+                }
+            });
+
+            checkedIds.clear();
+            updateDeleteBtn();
+            updateSelectAllState();
+            showToast('已删除选中记录');
+
+            // 检查是否所有商品都删除了
+            setTimeout(() => {
+                const remaining = document.querySelectorAll('.history-item');
+                if (remaining.length === 0) {
+                    showEmptyState();
+                    toggleEditMode();
+                }
+            }, 600);
+        }
+
+        function deleteItem(event, checkbox) {
+            event.stopPropagation();
+            if (isEditMode) return;
+
+            const item = checkbox.closest('.history-item');
+            item.style.transition = 'all 0.3s';
+            item.style.opacity = '0';
+            item.style.transform = 'translateX(40px)';
+            item.style.maxHeight = item.offsetHeight + 'px';
+
+            setTimeout(() => {
+                item.style.maxHeight = '0';
+                item.style.padding = '0';
+                item.style.margin = '0';
+                item.style.border = 'none';
+                item.style.overflow = 'hidden';
+            }, 200);
+
+            setTimeout(() => {
+                item.remove();
+                removeEmptyGroups();
+                const remaining = document.querySelectorAll('.history-item');
+                if (remaining.length === 0) {
+                    showEmptyState();
+                }
+            }, 500);
+
+            showToast('已删除');
+        }
+
+        function removeEmptyGroups() {
+            document.querySelectorAll('.date-group').forEach(group => {
+                const items = group.querySelectorAll('.history-item');
+                if (items.length === 0) {
+                    group.remove();
+                }
+            });
+        }
+
+        function showEmptyState() {
+            const scrollContent = document.getElementById('scrollContent');
+            scrollContent.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#c0c8e0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                        </svg>
+                    </div>
+                    <div class="empty-text">暂无浏览记录</div>
+                    <div class="empty-sub">快去逛逛发现好物吧</div>
+                </div>
+            `;
+            document.getElementById('btnEdit').style.display = 'none';
+            document.getElementById('defaultBar').style.display = 'none';
+        }
+
+        function showClearConfirm() {
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+        }
+
+        function confirmClear() {
+            closeModal();
+            showEmptyState();
+            showToast('已清空全部浏览记录');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 1500);
+        }
+
+        // 点击弹窗遮罩关闭
+        document.getElementById('confirmModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // 商品卡片点击（非编辑模式）
+        document.querySelectorAll('.history-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (isEditMode) return;
+                if (e.target.closest('.item-delete') || e.target.closest('.item-checkbox')) return;
+                showToast('跳转商品详情页');
+            });
+        });
+    </script>
+</body>
+</html>

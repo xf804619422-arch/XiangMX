@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品分类 - 微信小程序</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #e8ecf1;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+
+        /* 手机外框 */
+        .phone-frame {
+            width: 420px;
+            min-height: 780px;
+            background: #f5f6f8;
+            border-radius: 32px;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            height: 44px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            font-size: 12px;
+            color: #333;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .status-bar .time { font-size: 13px; }
+        .status-bar .icons { display: flex; gap: 6px; align-items: center; }
+
+        /* 导航栏 */
+        .nav-bar {
+            height: 48px;
+            background: white;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+        .nav-back {
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            font-size: 16px; color: #333; flex-shrink: 0;
+        }
+        .nav-back:hover { background: #f0f0f0; }
+        .search-box {
+            flex: 1; display: flex; align-items: center;
+            background: #f5f6f8; border-radius: 20px;
+            padding: 0 14px; height: 34px; gap: 8px;
+        }
+        .search-box .s-icon { font-size: 14px; color: #999; flex-shrink: 0; }
+        .search-box input {
+            flex: 1; border: none; background: transparent;
+            font-size: 13px; color: #333; outline: none;
+        }
+        .search-box input::placeholder { color: #bbb; }
+
+        /* 主体：左右两栏 */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            height: 0; /* flex trick: let children scroll */
+        }
+
+        /* ===== 左侧一级分类 ===== */
+        .category-sidebar {
+            width: 100px;
+            background: #f0f0f0;
+            overflow-y: auto;
+            flex-shrink: 0;
+            padding: 4px 0;
+        }
+        .category-sidebar::-webkit-scrollbar { width: 0; }
+
+        .sidebar-item {
+            padding: 14px 10px;
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.25s;
+            line-height: 1.3;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-item:hover { color: #333; background: rgba(0,0,0,0.03); }
+        .sidebar-item.active {
+            color: #ff6b35;
+            font-weight: 600;
+            background: white;
+            border-left-color: #ff6b35;
+        }
+        .sidebar-item .badge {
+            display: inline-block;
+            font-size: 10px;
+            background: #ff6b35;
+            color: white;
+            border-radius: 8px;
+            padding: 1px 6px;
+            margin-top: 2px;
+        }
+
+        /* ===== 右侧内容区 ===== */
+        .category-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 二级分类tab */
+        .sub-tabs-wrap {
+            background: white;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .sub-tabs {
+            display: flex;
+            overflow-x: auto;
+            padding: 0 4px;
+            gap: 0;
+        }
+        .sub-tabs::-webkit-scrollbar { height: 0; }
+        .sub-tab {
+            flex-shrink: 0;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+            position: relative;
+            white-space: nowrap;
+            transition: color 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        .sub-tab:hover { color: #333; }
+        .sub-tab.active {
+            color: #ff6b35;
+            font-weight: 600;
+            border-bottom-color: #ff6b35;
+        }
+
+        /* 商品列表 */
+        .product-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+        .product-list::-webkit-scrollbar { width: 4px; }
+        .product-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+        .product-item {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            align-items: center;
+            gap: 12px;
+        }
+        .product-item:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .product-item:active {
+            transform: scale(0.985);
+            opacity: 0.9;
+        }
+
+        .product-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        .product-img .img-label {
+            font-size: 11px;
+            color: #aaa;
+            position: absolute;
+            bottom: 4px;
+            right: 6px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 9px;
+        }
+
+        .product-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+        .product-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #222;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .product-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .product-tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: #fff3e0;
+            color: #ff6b35;
+            border: 1px solid #ffe0b2;
+            white-space: nowrap;
+        }
+        .product-tag.hot {
+            background: #fce4ec;
+            color: #e91e63;
+            border-color: #f8bbd0;
+        }
+        .product-desc {
+            font-size: 11px;
+            color: #999;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .product-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .product-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ff6b35;
+        }
+        .product-price .unit {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .product-price .original {
+            font-size: 11px;
+            color: #bbb;
+            text-decoration: line-through;
+            margin-left: 6px;
+            font-weight: 400;
+        }
+        .product-sales {
+            font-size: 11px;
+            color: #bbb;
+        }
+
+        .order-btn {
+            padding: 6px 14px;
+            border-radius: 16px;
+            background: #ff6b35;
+            color: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            border: none;
+            white-space: nowrap;
+        }
+        .order-btn:hover {
+            background: #e55a2b;
+            transform: scale(1.05);
+        }
+        .order-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 空状态 / 底部提示 */
+        .list-footer {
+            text-align: center;
+            padding: 20px 0;
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        /* 加载动画 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .product-item { animation: fadeInUp 0.35s ease forwards; }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <span class="time">9:41</span>
+            <span class="icons">WiFi &bull; &boxh;&boxv;&boxv;&boxv; 85%</span>
+        </div>
+
+        <!-- 导航栏 -->
+        <div class="nav-bar">
+            <div class="nav-back" onclick="history.back()" title="返回">&lsaquo;</div>
+            <div class="search-box">
+                <span class="s-icon">&#x1F50D;</span>
+                <input type="text" placeholder="搜索分类商品">
+            </div>
+        </div>
+
+        <!-- 主体 -->
+        <div class="main-content">
+            <!-- 左侧一级分类 -->
+            <div class="category-sidebar" id="sidebar">
+                <!-- 动态渲染 -->
+            </div>
+
+            <!-- 右侧内容 -->
+            <div class="category-content">
+                <!-- 二级分类tab -->
+                <div class="sub-tabs-wrap">
+                    <div class="sub-tabs" id="subTabs">
+                        <!-- 动态渲染 -->
+                    </div>
+                </div>
+
+                <!-- 商品列表 -->
+                <div class="product-list" id="productList">
+                    <!-- 动态渲染 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== 数据定义 =====
+        const categoryData = [
+            {
+                id: 'c1',
+                name: '推荐',
+                icon: '&#x2605;',
+                badge: '',
+                subs: [
+                    { id: 's1_1', name: '全部', products: 8 },
+                    { id: 's1_2', name: '热销爆款', products: 5 },
+                    { id: 's1_3', name: '今日特价', products: 4 },
+                ]
+            },
+            {
+                id: 'c2',
+                name: '水果',
+                icon: '',
+                badge: '',
+                subs: [
+                    { id: 's2_1', name: '全部', products: 6 },
+                    { id: 's2_2', name: '时令鲜果', products: 4 },
+                    { id: 's2_3', name: '进口水果', products: 3 },
+                    { id: 's2_4', name: '果切拼盘', products: 2 },
+                ]
+            },
+            {
+                id: 'c3',
+                name: '蔬菜',
+                icon: '',
+                badge: '',
+                subs: [
+                    { id: 's3_1', name: '全部', products: 5 },
+                    { id: 's3_2', name: '叶菜类', products: 3 },
+                    { id: 's3_3', name: '根茎类', products: 3 },
+                    { id: 's3_4', name: '菌菇类', products: 2 },
+                ]
+            },
+            {
+                id: 'c4',
+                name: '肉禽蛋',
+                icon: '',
+                badge: '',
+                subs: [
+                    { id: 's4_1', name: '全部', products: 5 },
+                    { id: 's4_2', name: '猪肉', products: 3 },
+                    { id: 's4_3', name: '鸡肉', products: 3 },
+                    { id: 's4_4', name: '蛋类', products: 2 },
+                ]
+            },
+            {
+                id: 'c5',
+                name: '海鲜水产',
+                icon: '',
+                badge: '',
+                subs: [
+                    { id: 's5_1', name: '全部', products: 4 },
+                    { id: 's5_2', name: '鱼类', products: 3 },
+                    { id: 's5_3', name: '虾蟹', products: 2 },
+                ]
+            },
+            {
+                id: 'c6',
+                name: '乳品烘焙',
+                icon: '',
+                badge: '',
+                subs: [
+                    { id: 's6_1', name: '全部', products: 5 },
+                    { id: 's6_2', name: '鲜奶', products: 3 },
+                    { id: 's6_3', name: '酸奶', products: 3 },
+                    { id: 's6_4', name: '面包糕点', products: 3 },
+                ]
+            },
+            {
+                id: 'c7',
+                name: '零食饮料',
+                icon: '',
+                badge: '',
+                subs: [
+                    { id: 's7_1', name: '全部', products: 6 },
+                    { id: 's7_2', name: '膨化食品', products: 3 },
+                    { id: 's7_3', name: '饮料', products: 4 },
+                ]
+            },
+            {
+                id: 'c8',
+                name: '日用百货',
+                icon: '',
+                badge: '',
+                subs: [
+                    { id: 's8_1', name: '全部', products: 4 },
+                    { id: 's8_2', name: '清洁用品', products: 3 },
+                    { id: 's8_3', name: '纸品', products: 2 },
+                ]
+            },
+        ];
+
+        // 模拟商品数据（不同分类/子分类使用不同颜色渐变区分）
+        const productTemplates = [
+            { name: '新疆阿克苏冰糖心苹果 5斤装', desc: '脆甜多汁 产地直发', price: 39.90, origPrice: 59.90, sales: '2.3万+', tags: ['爆款', '包邮'], hot: true, gradient: 'linear-gradient(135deg, #ffecd2, #fcb69f)' },
+            { name: '智利进口车厘子 JJ级 2斤装', desc: '果径28-30mm 鲜甜脆爽', price: 89.00, origPrice: 129.00, sales: '1.8万+', tags: ['进口', '顺丰'], hot: true, gradient: 'linear-gradient(135deg, #a18cd1, #fbc2eb)' },
+            { name: '有机西红柿 自然成熟 5斤', desc: '沙瓤多汁 无农药残留', price: 18.80, origPrice: 25.80, sales: '5.6万+', tags: ['有机', '新鲜'], hot: false, gradient: 'linear-gradient(135deg, #ff9a9e, #fecfef)' },
+            { name: '新鲜土鸡蛋 农家散养 30枚', desc: '蛋黄饱满 营养丰富', price: 45.00, origPrice: 59.90, sales: '3.2万+', tags: ['农家', '包邮'], hot: true, gradient: 'linear-gradient(135deg, #fddb92, #d1fdff)' },
+            { name: '鲜活基围虾 冷冻大虾 500g', desc: '个大肉嫩 火锅必备', price: 68.00, origPrice: 88.00, sales: '1.5万+', tags: ['活冻', '冷链'], hot: false, gradient: 'linear-gradient(135deg, #a1c4fd, #c2e9fb)' },
+            { name: '蒙牛纯牛奶 250ml*24盒', desc: '优质奶源 高钙营养', price: 59.90, origPrice: 79.90, sales: '8.9万+', tags: ['整箱', '爆款'], hot: true, gradient: 'linear-gradient(135deg, #d4fc79, #96e6a1)' },
+            { name: '良品铺子每日坚果 混合装750g', desc: '7种坚果果干 科学配比', price: 99.00, origPrice: 139.00, sales: '4.3万+', tags: ['零食', '健康'], hot: false, gradient: 'linear-gradient(135deg, #f5f7fa, #c3cfe2)' },
+            { name: '云南高山土豆 新鲜黄心 10斤装', desc: '粉糯香甜 煎炒炖煮皆宜', price: 15.90, origPrice: 22.90, sales: '6.7万+', tags: ['产地直发'], hot: false, gradient: 'linear-gradient(135deg, #ffd89b, #19547b)' },
+            { name: '安井鱼豆腐 火锅食材 500g', desc: 'Q弹嫩滑 涮锅必备', price: 22.80, origPrice: 35.00, sales: '2.1万+', tags: ['火锅', '冻品'], hot: false, gradient: 'linear-gradient(135deg, #e0c3fc, #8ec5fc)' },
+            { name: '金龙鱼大米 五常稻花香 10kg', desc: '东北五常产地 粒粒香糯', price: 79.90, origPrice: 99.90, sales: '10万+', tags: ['爆款', '包邮'], hot: true, gradient: 'linear-gradient(135deg, #faf0d7, #d4a574)' },
+            { name: '三只松鼠巨型零食大礼包 2kg', desc: '30袋组合装 追剧必备', price: 128.00, origPrice: 188.00, sales: '7.2万+', tags: ['送礼', '爆款'], hot: true, gradient: 'linear-gradient(135deg, #f093fb, #f5576c)' },
+            { name: '维达抽纸 3层120抽*24包', desc: '超韧湿水不易破', price: 49.90, origPrice: 69.90, sales: '12万+', tags: ['囤货', '包邮'], hot: false, gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)' },
+        ];
+
+        // 为每个二级分类生成对应商品
+        function getProductsForSub(subId) {
+            const count = subId.includes('_1') ? 8 : (subId.includes('_2') ? 5 : (subId.includes('_3') ? 4 : 3));
+            const startIdx = parseInt(subId.replace(/\D/g, '').slice(-2) || '0', 10) % productTemplates.length;
+            return productTemplates.slice(startIdx, startIdx + count).concat(
+                productTemplates.slice(0, Math.max(0, count - (productTemplates.length - startIdx)))
+            );
+        }
+
+        // ===== 状态 =====
+        let activeCategoryId = categoryData[0].id;
+        let activeSubId = categoryData[0].subs[0].id;
+
+        // ===== 渲染左侧一级分类 =====
+        function renderSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.innerHTML = categoryData.map(cat => `
+                <div class="sidebar-item${cat.id === activeCategoryId ? ' active' : ''}" data-cat-id="${cat.id}">
+                    ${cat.name}
+                    ${cat.badge ? `<span class="badge">${cat.badge}</span>` : ''}
+                </div>
+            `).join('');
+
+            // 绑定事件
+            sidebar.querySelectorAll('.sidebar-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    activeCategoryId = item.dataset.catId;
+                    const cat = categoryData.find(c => c.id === activeCategoryId);
+                    activeSubId = cat.subs[0].id;
+                    refreshRightPanel();
+                    renderSidebar();
+                });
+            });
+        }
+
+        // ===== 渲染右侧二级tab + 商品列表 =====
+        function renderSubTabs() {
+            const cat = categoryData.find(c => c.id === activeCategoryId);
+            const tabsWrap = document.getElementById('subTabs');
+            tabsWrap.innerHTML = cat.subs.map(sub => `
+                <div class="sub-tab${sub.id === activeSubId ? ' active' : ''}" data-sub-id="${sub.id}">
+                    ${sub.name}
+                </div>
+            `).join('');
+
+            tabsWrap.querySelectorAll('.sub-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    activeSubId = tab.dataset.subId;
+                    renderSubTabs();
+                    renderProductList();
+                });
+            });
+        }
+
+        function renderProductList() {
+            const products = getProductsForSub(activeSubId);
+            const list = document.getElementById('productList');
+            list.innerHTML = products.map((p, i) => `
+                <div class="product-item" style="animation-delay: ${i * 0.05}s;">
+                    <div class="product-img" style="background: ${p.gradient};">
+                        <span class="img-label">1/4</span>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">${p.name}</div>
+                        <div class="product-bottom">
+                            <span class="product-price"><span class="unit">&yen;</span>${p.price}</span>
+                            <span class="product-sales">已售${p.sales}</span>
+                        </div>
+                    </div>
+                    <button class="order-btn" onclick="event.stopPropagation(); this.textContent='已下单'; this.style.background='#10b981'; setTimeout(()=>{this.textContent='立即下单'; this.style.background='';},1000);">立即下单</button>
+                </div>
+            `).join('') + '<div class="list-footer">-- 已经到底了 --</div>';
+
+            // 商品点击事件
+            list.querySelectorAll('.product-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    item.style.opacity = '0.7';
+                    setTimeout(() => { item.style.opacity = ''; }, 150);
+                });
+            });
+        }
+
+        function refreshRightPanel() {
+            renderSubTabs();
+            renderProductList();
+        }
+
+        // ===== 初始化 =====
+        renderSidebar();
+        refreshRightPanel();
+    </script>
+</body>
+</html>

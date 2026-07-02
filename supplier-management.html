@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>供应商管理 - 商家管理端</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f6fa;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        /* 顶部导航 */
+        .top-bar {
+            background: #fff;
+            border-bottom: 1px solid #e8e8e8;
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .top-bar .logo {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .top-bar .logo span {
+            color: #667eea;
+        }
+
+        .top-bar .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .top-bar .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        /* 页面主体 */
+        .page-wrapper {
+            display: flex;
+            min-height: calc(100vh - 56px);
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 220px;
+            background: #fff;
+            border-right: 1px solid #e8e8e8;
+            padding: 16px 0;
+            flex-shrink: 0;
+        }
+
+        .sidebar .menu-group {
+            margin-bottom: 8px;
+        }
+
+        .sidebar .menu-group-title {
+            padding: 8px 20px;
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sidebar .menu-item {
+            padding: 10px 20px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar .menu-item:hover {
+            background: #f5f6fa;
+            color: #333;
+        }
+
+        .sidebar .menu-item.active {
+            background: #eef2ff;
+            color: #667eea;
+            border-left-color: #667eea;
+            font-weight: 500;
+        }
+
+        .sidebar .menu-icon {
+            width: 18px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-header .breadcrumb {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .page-header .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .page-header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* 操作栏 */
+        .action-bar {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .action-bar .left-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: #f5f6fa;
+            border-radius: 8px;
+            padding: 0 12px;
+            border: 1px solid #e8e8e8;
+            transition: border-color 0.2s;
+        }
+
+        .search-box:focus-within {
+            border-color: #667eea;
+            background: #fff;
+        }
+
+        .search-box input {
+            border: none;
+            background: transparent;
+            padding: 8px 8px;
+            font-size: 14px;
+            outline: none;
+            width: 220px;
+            color: #333;
+        }
+
+        .search-box input::placeholder {
+            color: #bbb;
+        }
+
+        .search-box .search-icon {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd6;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+        }
+
+        .btn-outline {
+            background: #fff;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .btn-outline:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .btn-danger {
+            background: #fff;
+            color: #ef4444;
+            border: 1px solid #fecaca;
+        }
+
+        .btn-danger:hover {
+            background: #fef2f2;
+            border-color: #ef4444;
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        /* 表格 */
+        .table-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table thead th {
+            background: #fafbfc;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 1px solid #e8e8e8;
+            white-space: nowrap;
+        }
+
+        table tbody td {
+            padding: 14px 16px;
+            font-size: 14px;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+        }
+
+        table tbody tr {
+            transition: background 0.15s;
+        }
+
+        table tbody tr:hover {
+            background: #fafbfc;
+        }
+
+        table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .td-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .td-optional {
+            color: #bbb;
+            font-style: italic;
+        }
+
+        .td-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .license-thumb {
+            width: 48px;
+            height: 48px;
+            border-radius: 6px;
+            border: 1px solid #e8e8e8;
+            object-fit: cover;
+            background: #fafbfc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .license-thumb:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .license-thumb.no-file {
+            color: #ddd;
+            font-size: 10px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.4;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: #fff;
+            border-top: 1px solid #f0f0f0;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .pagination .total {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .pagination .pages {
+            display: flex;
+            gap: 4px;
+        }
+
+        .pagination .page-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid #e8e8e8;
+            background: #fff;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .pagination .page-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .pagination .page-btn.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: #fff;
+        }
+
+        .pagination .page-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* 模态框 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 16px;
+            width: 560px;
+            max-width: 90vw;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            transform: translateY(20px);
+            transition: transform 0.25s;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-overlay.show .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .modal-header h3 {
+            font-size: 17px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: #f5f6fa;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        /* 表单 */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .form-label .required {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+
+        .form-label .optional {
+            color: #bbb;
+            font-weight: 400;
+            font-size: 12px;
+            margin-left: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #fafbfc;
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+            background: #fff;
+        }
+
+        .form-input::placeholder {
+            color: #ccc;
+        }
+
+        /* 文件上传 */
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafbfc;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #eef2ff;
+        }
+
+        .upload-area .upload-icon {
+            font-size: 28px;
+            color: #ccc;
+            margin-bottom: 8px;
+        }
+
+        .upload-area .upload-text {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .upload-area .upload-hint {
+            font-size: 11px;
+            color: #ccc;
+            margin-top: 4px;
+        }
+
+        .upload-preview {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: #f0fdf4;
+            border-radius: 8px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .upload-preview .file-icon {
+            width: 36px;
+            height: 36px;
+            background: #dcfce7;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #22c55e;
+            font-size: 16px;
+        }
+
+        .upload-preview .file-info {
+            flex: 1;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .upload-preview .file-size {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .upload-preview .remove-file {
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .upload-preview .remove-file:hover {
+            background: #fee2e2;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success {
+            background: #22c55e;
+            color: #fff;
+        }
+
+        .toast.error {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        /* 确认对话框 */
+        .confirm-content {
+            text-align: center;
+            padding: 8px 0;
+        }
+
+        .confirm-content .confirm-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            color: #f59e0b;
+        }
+
+        .confirm-content p {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .confirm-content .supplier-name-highlight {
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                padding: 16px;
+            }
+
+            .action-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box input {
+                width: 100%;
+            }
+
+            table {
+                font-size: 13px;
+            }
+
+            table thead th,
+            table tbody td {
+                padding: 10px 12px;
+            }
+
+            .modal {
+                width: 95vw;
+                max-height: 90vh;
+            }
+
+            .td-actions {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            table thead th:nth-child(3),
+            table tbody td:nth-child(3),
+            table thead th:nth-child(4),
+            table tbody td:nth-child(4) {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部导航 -->
+    <div class="top-bar">
+        <div class="logo">商家管理<span>·</span>后台</div>
+        <div class="user-info">
+            <span>张三的店铺</span>
+            <div class="avatar">张</div>
+        </div>
+    </div>
+
+    <!-- 页面主体 -->
+    <div class="page-wrapper">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="menu-group">
+                <div class="menu-group-title">商品</div>
+                <div class="menu-item active"><span class="menu-icon">&#x25CF;</span>供应商管理</div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <div class="page-header">
+                <div class="breadcrumb"><a href="index.html">首页</a> / 供应商管理</div>
+                <h1>供应商管理</h1>
+            </div>
+
+            <!-- 操作栏 -->
+            <div class="action-bar">
+                <div class="left-actions">
+                    <div class="search-box">
+                        <span class="search-icon">&#x1F50D;</span>
+                        <input type="text" id="searchInput" placeholder="搜索供应商名称..." oninput="renderTable()">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    <span>+</span> 新增供应商
+                </button>
+            </div>
+
+            <!-- 表格 -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>供应商名称</th>
+                            <th>联系人</th>
+                            <th>联系电话</th>
+                            <th>供应商地址</th>
+                            <th style="width: 80px;">营业执照</th>
+                            <th style="width: 200px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+                <div class="empty-state" id="emptyState" style="display:none;">
+                    <div class="empty-icon">&#x1F4E6;</div>
+                    <p>暂无供应商数据</p>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <span>+</span> 新增供应商
+                    </button>
+                </div>
+                <div class="pagination" id="pagination">
+                    <div class="total">共 <strong id="totalCount">0</strong> 条记录</div>
+                    <div class="pages" id="pageButtons"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 新增/编辑 模态框 -->
+    <div class="modal-overlay" id="formModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">新增供应商</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="supplierForm" onsubmit="handleSubmit(event)">
+                    <input type="hidden" id="editId" value="">
+                    <div class="form-group">
+                        <label class="form-label">供应商名称 <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="supplierName" placeholder="请输入供应商名称" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">联系人 <span class="optional">(选填)</span></label>
+                        <input type="text" class="form-input" id="contactPerson" placeholder="请输入联系人姓名">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">联系电话 <span class="optional">(选填)</span></label>
+                        <input type="text" class="form-input" id="contactPhone" placeholder="请输入联系人电话" maxlength="13">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">供应商地址 <span class="optional">(选填)</span></label>
+                        <input type="text" class="form-input" id="supplierAddress" placeholder="请输入供应商地址">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">营业执照 <span class="optional">(选填)</span></label>
+                        <div class="upload-area" id="uploadArea" onclick="document.getElementById('licenseFile').click()">
+                            <div class="upload-icon">&#x21E7;</div>
+                            <div class="upload-text">点击上传营业执照</div>
+                            <div class="upload-hint">支持 JPG、PNG、PDF 格式，大小不超过 5MB</div>
+                        </div>
+                        <input type="file" id="licenseFile" accept=".jpg,.jpeg,.png,.pdf" style="display:none;" onchange="handleFileSelect(event)">
+                        <div class="upload-preview" id="uploadPreview" style="display:none;">
+                            <div class="file-icon">&#x1F4C4;</div>
+                            <div class="file-info">
+                                <div id="fileName">-</div>
+                                <div class="file-size" id="fileSize">-</div>
+                            </div>
+                            <span class="remove-file" onclick="removeFile(event)">&times;</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" type="submit" form="supplierForm">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认 模态框 -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal" style="width:400px;">
+            <div class="modal-header">
+                <h3>确认删除</h3>
+                <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="confirm-content">
+                    <div class="confirm-icon">&#x26A0;</div>
+                    <p>确定要删除供应商<br><span class="supplier-name-highlight" id="confirmSupplierName"></span> 吗？</p>
+                    <p style="font-size:13px;color:#999;margin-top:8px;">删除后数据不可恢复</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeConfirmModal()">取消</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 商品列表 模态框 -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal" style="width:680px;">
+            <div class="modal-header">
+                <h3 id="productModalTitle">供应商商品列表</h3>
+                <button class="modal-close" onclick="closeProductModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:20px 24px;">
+                <div class="search-box" style="margin-bottom:16px;width:100%;">
+                    <span class="search-icon">&#x1F50D;</span>
+                    <input type="text" id="productSearchInput" placeholder="搜索商品名称..." oninput="renderProductTable()" style="width:100%;">
+                </div>
+                <div class="table-container" style="box-shadow:none;border:1px solid #f0f0f0;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:50px;">#</th>
+                                <th>商品名称</th>
+                                <th style="width:100px;">商品分类</th>
+                                <th style="width:100px;">商品价格</th>
+                                <th style="width:80px;">库存</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                        </tbody>
+                    </table>
+                    <div class="empty-state" id="productEmptyState" style="border:none;">
+                        <div class="empty-icon">&#x1F4E6;</div>
+                        <p>该供应商暂无商品</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeProductModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 模拟数据存储
+        const STORAGE_KEY = 'supplier_data';
+        let suppliers = [];
+        let currentPage = 1;
+        const pageSize = 8;
+
+        // 加载数据
+        function loadData() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                suppliers = JSON.parse(stored);
+            } else {
+                // 初始化示例数据
+                suppliers = [
+                    { id: 1, name: '深圳市华强电子科技有限公司', contact: '王经理', phone: '13800138001', address: '深圳市福田区华强北路1001号', licenseName: '华强电子-营业执照.pdf', licenseSize: '2.3 MB' },
+                    { id: 2, name: '广州白云服饰有限公司', contact: '李女士', phone: '13900139002', address: '广州市白云区三元里大道68号', licenseName: null, licenseSize: null },
+                    { id: 3, name: '杭州西湖龙井茶叶合作社', contact: '陈先生', phone: '13700137003', address: '杭州市西湖区龙井路88号', licenseName: '龙井茶叶-营业执照.jpg', licenseSize: '1.8 MB' },
+                    { id: 4, name: '北京中关村数码科技公司', contact: '', phone: '', address: '北京市海淀区中关村大街1号', licenseName: null, licenseSize: null },
+                    { id: 5, name: '成都锦里食品加工厂', contact: '赵厂长', phone: '13600136005', address: '成都市武侯区锦里西路20号', licenseName: '锦里食品-营业执照.pdf', licenseSize: '3.1 MB' },
+                ];
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(suppliers));
+        }
+
+        // 搜索过滤
+        function getFilteredSuppliers() {
+            const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+            if (!keyword) return suppliers;
+            return suppliers.filter(s => s.name.toLowerCase().includes(keyword));
+        }
+
+        // 渲染表格
+        function renderTable() {
+            const filtered = getFilteredSuppliers();
+            const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const start = (currentPage - 1) * pageSize;
+            const pageData = filtered.slice(start, start + pageSize);
+
+            const tbody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+                tbody.innerHTML = pageData.map((s, i) => `
+                    <tr>
+                        <td>${start + i + 1}</td>
+                        <td class="td-name">${escapeHtml(s.name)}</td>
+                        <td>${s.contact ? escapeHtml(s.contact) : '<span class="td-optional">未填写</span>'}</td>
+                        <td>${s.phone ? escapeHtml(s.phone) : '<span class="td-optional">未填写</span>'}</td>
+                        <td>${s.address ? escapeHtml(s.address) : '<span class="td-optional">未填写</span>'}</td>
+                        <td>
+                            ${s.licenseName
+                                ? `<div class="license-thumb" title="${escapeHtml(s.licenseName)}" onclick="event.stopPropagation(); showToast('预览营业执照: ${escapeHtml(s.licenseName)}', 'success')">&#x1F4C4;</div>`
+                                : `<div class="license-thumb no-file">暂无</div>`
+                            }
+                        </td>
+                        <td>
+                            <div class="td-actions">
+                                <button class="btn btn-outline btn-sm" onclick="openEditModal(${s.id})">编辑</button>
+                                <button class="btn btn-outline btn-sm" style="color:#667eea;border-color:#c7d2fe;" onclick="openProductModal('${escapeHtml(s.name)}')">查看商品</button>
+                                <button class="btn btn-danger btn-sm" onclick="openDeleteConfirm(${s.id})">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // 渲染分页
+            document.getElementById('totalCount').textContent = filtered.length;
+            const pageButtons = document.getElementById('pageButtons');
+            if (totalPages <= 1) {
+                pageButtons.innerHTML = '';
+            } else {
+                let btns = '';
+                btns += `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>&laquo;</button>`;
+                for (let p = 1; p <= totalPages; p++) {
+                    if (totalPages > 7 && p > 3 && p < totalPages - 2 && p !== currentPage && p !== currentPage - 1 && p !== currentPage + 1) {
+                        if (p === 4) btns += `<button class="page-btn" disabled>...</button>`;
+                        continue;
+                    }
+                    btns += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
+                }
+                btns += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>&raquo;</button>`;
+                pageButtons.innerHTML = btns;
+            }
+        }
+
+        function goPage(page) {
+            const filtered = getFilteredSuppliers();
+            const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderTable();
+        }
+
+        // 模态框操作
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = '新增供应商';
+            document.getElementById('editId').value = '';
+            document.getElementById('supplierForm').reset();
+            resetUpload();
+            document.getElementById('formModal').classList.add('show');
+        }
+
+        function openEditModal(id) {
+            const supplier = suppliers.find(s => s.id === id);
+            if (!supplier) return;
+            document.getElementById('modalTitle').textContent = '编辑供应商';
+            document.getElementById('editId').value = supplier.id;
+            document.getElementById('supplierName').value = supplier.name;
+            document.getElementById('contactPerson').value = supplier.contact || '';
+            document.getElementById('contactPhone').value = supplier.phone || '';
+            document.getElementById('supplierAddress').value = supplier.address || '';
+
+            if (supplier.licenseName) {
+                showUploadPreview(supplier.licenseName, supplier.licenseSize);
+            } else {
+                resetUpload();
+            }
+
+            document.getElementById('formModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('formModal').classList.remove('show');
+            document.getElementById('supplierForm').reset();
+            resetUpload();
+        }
+
+        function handleSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editId').value;
+            const name = document.getElementById('supplierName').value.trim();
+            const contact = document.getElementById('contactPerson').value.trim();
+            const phone = document.getElementById('contactPhone').value.trim();
+            const address = document.getElementById('supplierAddress').value.trim();
+
+            if (!name) {
+                showToast('请输入供应商名称', 'error');
+                return;
+            }
+
+            if (editId) {
+                // 编辑
+                const idx = suppliers.findIndex(s => s.id === parseInt(editId));
+                if (idx !== -1) {
+                    suppliers[idx].name = name;
+                    suppliers[idx].contact = contact;
+                    suppliers[idx].phone = phone;
+                    suppliers[idx].address = address;
+                    // 保留已上传的文件信息
+                    showToast('供应商信息已更新', 'success');
+                }
+            } else {
+                // 新增
+                const newSupplier = {
+                    id: Date.now(),
+                    name,
+                    contact,
+                    phone,
+                    address,
+                    licenseName: uploadedFileName,
+                    licenseSize: uploadedFileSize,
+                };
+                suppliers.unshift(newSupplier);
+                showToast('供应商已添加', 'success');
+            }
+
+            saveData();
+            closeModal();
+            currentPage = 1;
+            renderTable();
+        }
+
+        // 删除确认
+        let deleteTargetId = null;
+
+        function openDeleteConfirm(id) {
+            const supplier = suppliers.find(s => s.id === id);
+            if (!supplier) return;
+            deleteTargetId = id;
+            document.getElementById('confirmSupplierName').textContent = supplier.name;
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+            deleteTargetId = null;
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (deleteTargetId !== null) {
+                suppliers = suppliers.filter(s => s.id !== deleteTargetId);
+                saveData();
+                showToast('供应商已删除', 'success');
+                const filtered = getFilteredSuppliers();
+                const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+                if (currentPage > totalPages) currentPage = totalPages;
+                renderTable();
+            }
+            closeConfirmModal();
+        });
+
+        // 文件上传处理
+        let uploadedFileName = null;
+        let uploadedFileSize = null;
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('文件大小不能超过 5MB', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['jpg', 'jpeg', 'png', 'pdf'].includes(ext)) {
+                showToast('仅支持 JPG、PNG、PDF 格式', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            uploadedFileName = file.name;
+            uploadedFileSize = formatFileSize(file.size);
+            showUploadPreview(file.name, uploadedFileSize);
+        }
+
+        function showUploadPreview(name, size) {
+            document.getElementById('uploadArea').style.display = 'none';
+            document.getElementById('uploadPreview').style.display = 'flex';
+            document.getElementById('fileName').textContent = name;
+            document.getElementById('fileSize').textContent = size;
+        }
+
+        function resetUpload() {
+            document.getElementById('uploadArea').style.display = '';
+            document.getElementById('uploadPreview').style.display = 'none';
+            document.getElementById('licenseFile').value = '';
+            uploadedFileName = null;
+            uploadedFileSize = null;
+        }
+
+        function removeFile(e) {
+            e.stopPropagation();
+            resetUpload();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        // Toast
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast ' + type + ' show';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // 点击遮罩关闭模态框
+        document.getElementById('formModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        document.getElementById('confirmModal').addEventListener('click', function(e) {
+            if (e.target === this) closeConfirmModal();
+        });
+
+        // 商品弹窗
+        function openProductModal(supplierName) {
+            document.getElementById('productModalTitle').textContent = supplierName + ' - 商品列表';
+            document.getElementById('productSearchInput').value = '';
+            document.getElementById('productModal').classList.add('show');
+            renderProductTable();
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.remove('show');
+        }
+
+        function renderProductTable() {
+            const tbody = document.getElementById('productTableBody');
+            const emptyState = document.getElementById('productEmptyState');
+            // 仅展示空状态，不加载数据
+            tbody.innerHTML = '';
+            emptyState.style.display = 'block';
+        }
+
+        document.getElementById('productModal').addEventListener('click', function(e) {
+            if (e.target === this) closeProductModal();
+        });
+
+        // 键盘关闭
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('formModal').classList.contains('show')) {
+                    closeModal();
+                }
+                if (document.getElementById('confirmModal').classList.contains('show')) {
+                    closeConfirmModal();
+                }
+                if (document.getElementById('productModal').classList.contains('show')) {
+                    closeProductModal();
+                }
+            }
+        });
+
+        // 侧边栏菜单点击
+        document.querySelectorAll('.sidebar .menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.sidebar .menu-item').forEach(m => m.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 初始化
+        loadData();
+        renderTable();
+    </script>
+</body>
+</html>

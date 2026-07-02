@@ -190,6 +190,19 @@
 
         .search-box button:hover { background: #5a6fd6; }
 
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #333;
+            background: white;
+            cursor: pointer;
+            min-width: 140px;
+        }
+
+        .filter-select:focus { outline: none; border-color: #667eea; }
+
         .btn {
             padding: 8px 18px;
             border: none;
@@ -277,6 +290,18 @@
         .tag-personal { background: #e8f4fd; color: #3b82f6; }
         .tag-enterprise { background: #fef3e2; color: #f59e0b; }
         .tag-flagship { background: #fce7f3; color: #ec4899; }
+
+        .pay-method-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .tag-wechat { background: #e8fdf0; color: #10b981; }
+        .tag-balance { background: #e8f4fd; color: #3b82f6; }
+        .tag-gold { background: #fef3e2; color: #f59e0b; }
 
         .product-info {
             display: flex;
@@ -419,6 +444,15 @@
                             <input type="text" id="salesSearch" placeholder="搜索商品名称..." onkeydown="if(event.key==='Enter')loadSalesData()">
                             <button onclick="loadSalesData()">搜索</button>
                         </div>
+                        <select class="filter-select" id="salesSupplierFilter" onchange="loadSalesData()">
+                            <option value="">全部供应商</option>
+                        </select>
+                        <select class="filter-select" id="salesPayMethodFilter" onchange="loadSalesData()">
+                            <option value="">全部支付方式</option>
+                            <option value="wechat">微信支付</option>
+                            <option value="balance">余额支付</option>
+                            <option value="gold">物业金支付</option>
+                        </select>
                         <div class="time-range">
                             <input type="date" id="salesStartDate">
                             <span>至</span>
@@ -434,10 +468,13 @@
                         <tr>
                             <th>商品主图</th>
                             <th>商品名称</th>
-                            <th style="width:90px;">购买数量</th>
-                            <th style="width:120px;">单价</th>
-                            <th style="width:120px;">小计</th>
-                            <th style="width:170px;">下单时间</th>
+                            <th style="width:150px;">供应商</th>
+                            <th style="width:100px;">成本价</th>
+                            <th style="width:80px;">购买数量</th>
+                            <th style="width:100px;">单价</th>
+                            <th style="width:100px;">小计</th>
+                            <th style="width:110px;">支付方式</th>
+                            <th style="width:160px;">下单时间</th>
                         </tr>
                     </thead>
                     <tbody id="salesTableBody"></tbody>
@@ -488,36 +525,36 @@
         ];
 
         var mockSales = [
-            { id: 1, name: '华为Mate 60 Pro 智能手机', qty: 2, price: 6999, subtotal: 13998, time: '2026-05-30 14:23:15' },
-            { id: 2, name: 'Apple iPhone 15 Pro Max', qty: 1, price: 9999, subtotal: 9999, time: '2026-05-30 14:20:30' },
-            { id: 3, name: '戴森V15无绳吸尘器', qty: 3, price: 4990, subtotal: 14970, time: '2026-05-30 13:45:08' },
-            { id: 4, name: '茅台飞天53度 500ml', qty: 2, price: 1499, subtotal: 2998, time: '2026-05-30 12:30:22' },
-            { id: 5, name: 'Nike Air Jordan 1 运动鞋', qty: 1, price: 1199, subtotal: 1199, time: '2026-05-30 11:15:40' },
-            { id: 6, name: '索尼PlayStation 5 游戏机', qty: 1, price: 3899, subtotal: 3899, time: '2026-05-30 10:42:55' },
-            { id: 7, name: '美的变频空调 1.5匹', qty: 2, price: 2999, subtotal: 5998, time: '2026-05-30 09:58:12' },
-            { id: 8, name: '海蓝之谜精华面霜60ml', qty: 1, price: 2990, subtotal: 2990, time: '2026-05-30 09:20:30' },
-            { id: 9, name: '小米14 Pro 智能手机', qty: 4, price: 3999, subtotal: 15996, time: '2026-05-29 18:35:10' },
-            { id: 10, name: 'Adidas Ultra Boost跑鞋', qty: 2, price: 1199, subtotal: 2398, time: '2026-05-29 17:12:44' },
-            { id: 11, name: 'SK-II 神仙水230ml', qty: 1, price: 1490, subtotal: 1490, time: '2026-05-29 16:48:21' },
-            { id: 12, name: '联想ThinkPad X1 Carbon', qty: 1, price: 8999, subtotal: 8999, time: '2026-05-29 16:05:33' },
-            { id: 13, name: '伊利金典纯牛奶 250ml*24', qty: 5, price: 99, subtotal: 495, time: '2026-05-29 15:30:18' },
-            { id: 14, name: '大疆Mavic 3无人机', qty: 1, price: 12888, subtotal: 12888, time: '2026-05-29 14:55:07' },
-            { id: 15, name: '雅诗兰黛小棕瓶精华', qty: 3, price: 1999, subtotal: 5997, time: '2026-05-29 14:22:40' },
-            { id: 16, name: '格力冰箱 BCD-520W', qty: 1, price: 3999, subtotal: 3999, time: '2026-05-29 13:10:25' },
-            { id: 17, name: '可口可乐 330ml*24罐', qty: 8, price: 59, subtotal: 472, time: '2026-05-29 12:38:12' },
-            { id: 18, name: '五粮液 52度500ml', qty: 2, price: 1499, subtotal: 2998, time: '2026-05-29 11:02:30' },
-            { id: 19, name: '华为Watch GT4 智能手表', qty: 2, price: 1999, subtotal: 3998, time: '2026-05-29 10:48:15' },
-            { id: 20, name: '三只松鼠坚果大礼包', qty: 6, price: 99, subtotal: 594, time: '2026-05-29 10:15:44' },
-            { id: 21, name: '农夫山泉矿泉水 550ml*24', qty: 10, price: 29, subtotal: 290, time: '2026-05-29 09:42:30' },
-            { id: 22, name: '兰蔻小黑瓶肌底液', qty: 1, price: 2999, subtotal: 2999, time: '2026-05-29 09:05:18' },
-            { id: 23, name: '海尔电热水器60L', qty: 1, price: 2999, subtotal: 2999, time: '2026-05-28 18:35:22' },
-            { id: 24, name: 'OPPO Find X7 手机', qty: 3, price: 3999, subtotal: 11997, time: '2026-05-28 17:20:40' },
-            { id: 25, name: '蒙牛纯甄酸奶 200g*24', qty: 7, price: 99, subtotal: 693, time: '2026-05-28 16:48:15' },
-            { id: 26, name: '三星Galaxy S24 Ultra', qty: 1, price: 8999, subtotal: 8999, time: '2026-05-28 15:30:22' },
-            { id: 27, name: 'Lululemon瑜伽裤', qty: 4, price: 999, subtotal: 3996, time: '2026-05-28 14:12:30' },
-            { id: 28, name: '飞利浦电动牙刷HX9', qty: 5, price: 599, subtotal: 2995, time: '2026-05-28 13:35:18' },
-            { id: 29, name: '百岁山矿泉水570ml*24', qty: 12, price: 49, subtotal: 588, time: '2026-05-28 12:20:44' },
-            { id: 30, name: '惠普打印机 LaserJet', qty: 1, price: 2999, subtotal: 2999, time: '2026-05-28 11:05:22' }
+            { id: 1, name: '华为Mate 60 Pro 智能手机', supplier: '华为技术有限公司', costPrice: 5899, qty: 2, price: 6999, subtotal: 13998, payMethod: 'wechat', time: '2026-05-30 14:23:15' },
+            { id: 2, name: 'Apple iPhone 15 Pro Max', supplier: '苹果中国供应链', costPrice: 8499, qty: 1, price: 9999, subtotal: 9999, payMethod: 'balance', time: '2026-05-30 14:20:30' },
+            { id: 3, name: '戴森V15无绳吸尘器', supplier: '戴森贸易有限公司', costPrice: 3890, qty: 3, price: 4990, subtotal: 14970, payMethod: 'wechat', time: '2026-05-30 13:45:08' },
+            { id: 4, name: '茅台飞天53度 500ml', supplier: '贵州茅台酒厂', costPrice: 999, qty: 2, price: 1499, subtotal: 2998, payMethod: 'gold', time: '2026-05-30 12:30:22' },
+            { id: 5, name: 'Nike Air Jordan 1 运动鞋', supplier: '耐克体育用品有限公司', costPrice: 799, qty: 1, price: 1199, subtotal: 1199, payMethod: 'wechat', time: '2026-05-30 11:15:40' },
+            { id: 6, name: '索尼PlayStation 5 游戏机', supplier: '索尼中国有限公司', costPrice: 3099, qty: 1, price: 3899, subtotal: 3899, payMethod: 'balance', time: '2026-05-30 10:42:55' },
+            { id: 7, name: '美的变频空调 1.5匹', supplier: '美的集团有限公司', costPrice: 2199, qty: 2, price: 2999, subtotal: 5998, payMethod: 'gold', time: '2026-05-30 09:58:12' },
+            { id: 8, name: '海蓝之谜精华面霜60ml', supplier: '海蓝之谜贸易有限公司', costPrice: 2290, qty: 1, price: 2990, subtotal: 2990, payMethod: 'wechat', time: '2026-05-30 09:20:30' },
+            { id: 9, name: '小米14 Pro 智能手机', supplier: '小米通讯技术有限公司', costPrice: 3199, qty: 4, price: 3999, subtotal: 15996, payMethod: 'balance', time: '2026-05-29 18:35:10' },
+            { id: 10, name: 'Adidas Ultra Boost跑鞋', supplier: '阿迪达斯体育有限公司', costPrice: 799, qty: 2, price: 1199, subtotal: 2398, payMethod: 'gold', time: '2026-05-29 17:12:44' },
+            { id: 11, name: 'SK-II 神仙水230ml', supplier: 'SK-II中国贸易有限公司', costPrice: 1090, qty: 1, price: 1490, subtotal: 1490, payMethod: 'wechat', time: '2026-05-29 16:48:21' },
+            { id: 12, name: '联想ThinkPad X1 Carbon', supplier: '联想集团有限公司', costPrice: 6899, qty: 1, price: 8999, subtotal: 8999, payMethod: 'wechat', time: '2026-05-29 16:05:33' },
+            { id: 13, name: '伊利金典纯牛奶 250ml*24', supplier: '伊利实业集团有限公司', costPrice: 69, qty: 5, price: 99, subtotal: 495, payMethod: 'balance', time: '2026-05-29 15:30:18' },
+            { id: 14, name: '大疆Mavic 3无人机', supplier: '大疆创新科技有限公司', costPrice: 9888, qty: 1, price: 12888, subtotal: 12888, payMethod: 'gold', time: '2026-05-29 14:55:07' },
+            { id: 15, name: '雅诗兰黛小棕瓶精华', supplier: '雅诗兰黛贸易有限公司', costPrice: 1399, qty: 3, price: 1999, subtotal: 5997, payMethod: 'wechat', time: '2026-05-29 14:22:40' },
+            { id: 16, name: '格力冰箱 BCD-520W', supplier: '格力电器股份有限公司', costPrice: 2899, qty: 1, price: 3999, subtotal: 3999, payMethod: 'balance', time: '2026-05-29 13:10:25' },
+            { id: 17, name: '可口可乐 330ml*24罐', supplier: '可口可乐饮料有限公司', costPrice: 39, qty: 8, price: 59, subtotal: 472, payMethod: 'gold', time: '2026-05-29 12:38:12' },
+            { id: 18, name: '五粮液 52度500ml', supplier: '五粮液集团有限公司', costPrice: 999, qty: 2, price: 1499, subtotal: 2998, payMethod: 'wechat', time: '2026-05-29 11:02:30' },
+            { id: 19, name: '华为Watch GT4 智能手表', supplier: '华为技术有限公司', costPrice: 1399, qty: 2, price: 1999, subtotal: 3998, payMethod: 'balance', time: '2026-05-29 10:48:15' },
+            { id: 20, name: '三只松鼠坚果大礼包', supplier: '三只松鼠股份有限公司', costPrice: 69, qty: 6, price: 99, subtotal: 594, payMethod: 'gold', time: '2026-05-29 10:15:44' },
+            { id: 21, name: '农夫山泉矿泉水 550ml*24', supplier: '农夫山泉股份有限公司', costPrice: 19, qty: 10, price: 29, subtotal: 290, payMethod: 'wechat', time: '2026-05-29 09:42:30' },
+            { id: 22, name: '兰蔻小黑瓶肌底液', supplier: '兰蔻中国贸易有限公司', costPrice: 2199, qty: 1, price: 2999, subtotal: 2999, payMethod: 'balance', time: '2026-05-29 09:05:18' },
+            { id: 23, name: '海尔电热水器60L', supplier: '海尔集团有限公司', costPrice: 2199, qty: 1, price: 2999, subtotal: 2999, payMethod: 'gold', time: '2026-05-28 18:35:22' },
+            { id: 24, name: 'OPPO Find X7 手机', supplier: 'OPPO广东移动通信有限公司', costPrice: 3199, qty: 3, price: 3999, subtotal: 11997, payMethod: 'wechat', time: '2026-05-28 17:20:40' },
+            { id: 25, name: '蒙牛纯甄酸奶 200g*24', supplier: '蒙牛乳业集团有限公司', costPrice: 69, qty: 7, price: 99, subtotal: 693, payMethod: 'balance', time: '2026-05-28 16:48:15' },
+            { id: 26, name: '三星Galaxy S24 Ultra', supplier: '三星中国投资有限公司', costPrice: 7199, qty: 1, price: 8999, subtotal: 8999, payMethod: 'gold', time: '2026-05-28 15:30:22' },
+            { id: 27, name: 'Lululemon瑜伽裤', supplier: '露露乐蒙贸易有限公司', costPrice: 599, qty: 4, price: 999, subtotal: 3996, payMethod: 'wechat', time: '2026-05-28 14:12:30' },
+            { id: 28, name: '飞利浦电动牙刷HX9', supplier: '飞利浦中国投资有限公司', costPrice: 399, qty: 5, price: 599, subtotal: 2995, payMethod: 'balance', time: '2026-05-28 13:35:18' },
+            { id: 29, name: '百岁山矿泉水570ml*24', supplier: '景田食品饮料有限公司', costPrice: 29, qty: 12, price: 49, subtotal: 588, payMethod: 'gold', time: '2026-05-28 12:20:44' },
+            { id: 30, name: '惠普打印机 LaserJet', supplier: '惠普中国有限公司', costPrice: 2199, qty: 1, price: 2999, subtotal: 2999, payMethod: 'wechat', time: '2026-05-28 11:05:22' }
         ];
 
         function formatDate(d) {
@@ -619,6 +656,8 @@
 
         function loadSalesData() {
             var keyword = (document.getElementById('salesSearch').value || '').toLowerCase().trim();
+            var supplierFilter = document.getElementById('salesSupplierFilter').value;
+            var payMethodFilter = document.getElementById('salesPayMethodFilter').value;
             var filtered = mockSales.slice();
 
             if (keyword) {
@@ -627,22 +666,41 @@
                 });
             }
 
+            if (supplierFilter) {
+                filtered = filtered.filter(function(s) {
+                    return s.supplier === supplierFilter;
+                });
+            }
+
+            if (payMethodFilter) {
+                filtered = filtered.filter(function(s) {
+                    return s.payMethod === payMethodFilter;
+                });
+            }
+
             filtered.sort(function(a, b) {
                 return b.time.localeCompare(a.time);
             });
 
             var totalPages = Math.ceil(filtered.length / salesPageSize);
+            if (salesPage > totalPages) salesPage = 1;
             var start = (salesPage - 1) * salesPageSize;
             var pageData = filtered.slice(start, start + salesPageSize);
+
+            var payMethodLabels = { wechat: '微信支付', balance: '余额支付', gold: '物业金支付' };
+            var payMethodClasses = { wechat: 'tag-wechat', balance: 'tag-balance', gold: 'tag-gold' };
 
             var tbody = document.getElementById('salesTableBody');
             tbody.innerHTML = pageData.map(function(s) {
                 return '<tr>' +
                     '<td><div class="product-info"><div class="product-img">📦</div></div></td>' +
                     '<td><div class="product-name">' + s.name + '</div></td>' +
+                    '<td style="font-size:13px;color:#555;">' + s.supplier + '</td>' +
+                    '<td>¥' + s.costPrice.toLocaleString() + '</td>' +
                     '<td>' + s.qty + '</td>' +
                     '<td>¥' + s.price.toLocaleString() + '</td>' +
                     '<td class="amount-positive">¥' + s.subtotal.toLocaleString() + '</td>' +
+                    '<td><span class="pay-method-tag ' + (payMethodClasses[s.payMethod] || '') + '">' + (payMethodLabels[s.payMethod] || s.payMethod) + '</span></td>' +
                     '<td>' + s.time + '</td>' +
                 '</tr>';
             }).join('');
@@ -669,7 +727,25 @@
             setTimeout(function() { toast.classList.remove('show'); }, 2500);
         }
 
+        function initSupplierFilter() {
+            var suppliers = [];
+            for (var i = 0; i < mockSales.length; i++) {
+                if (suppliers.indexOf(mockSales[i].supplier) === -1) {
+                    suppliers.push(mockSales[i].supplier);
+                }
+            }
+            suppliers.sort();
+            var select = document.getElementById('salesSupplierFilter');
+            for (var s = 0; s < suppliers.length; s++) {
+                var opt = document.createElement('option');
+                opt.value = suppliers[s];
+                opt.textContent = suppliers[s];
+                select.appendChild(opt);
+            }
+        }
+
         initDates();
+        initSupplierFilter();
         loadOverviewData();
     </script>
 </body>

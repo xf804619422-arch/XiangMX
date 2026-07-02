@@ -311,6 +311,66 @@
             background: #e4e7eb;
         }
 
+        .switch-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #ccc;
+            border-radius: 28px;
+            transition: background 0.25s;
+        }
+
+        .switch-slider::before {
+            content: '';
+            position: absolute;
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.25s;
+        }
+
+        .switch input:checked + .switch-slider {
+            background: #667eea;
+        }
+
+        .switch input:checked + .switch-slider::before {
+            transform: translateX(24px);
+        }
+
+        .switch-label {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .switch-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
         .current-rule {
             margin-top: 20px;
             padding: 16px;
@@ -412,79 +472,94 @@
 
         <main class="content-area">
             <h2>物业金管理</h2>
-            <p class="subtitle">配置用户在不同消费场景下获得的物业金奖励规则</p>
+            <p class="subtitle">配置物业金支付开关及各场景抵扣比例</p>
 
             <div class="config-card">
                 <div class="config-card-header">
-                    <div class="icon icon-online">🛒</div>
+                    <div class="icon icon-online">⚡</div>
                     <div>
-                        <h3>线上购物奖励</h3>
-                        <p>用户通过平台线上购物后获得的物业金奖励</p>
+                        <h3>物业金支付开关</h3>
+                        <p>控制用户是否可以使用物业金进行支付抵扣</p>
                     </div>
                 </div>
-
-                <div class="toggle-group" id="onlineToggleGroup">
-                    <button class="toggle-btn active" data-type="percent" onclick="switchMode('online', 'percent')">按百分比</button>
-                    <button class="toggle-btn" data-type="fixed" onclick="switchMode('online', 'fixed')">固定金额</button>
-                </div>
-
-                <div class="config-form">
-                    <div class="form-group" id="onlinePercentGroup">
-                        <label>下单金额百分比</label>
-                        <div class="input-unit">
-                            <input type="number" id="onlinePercent" placeholder="例如 1" min="0" max="100" step="0.1" value="1">
-                            <span class="unit">%</span>
-                        </div>
+                <div class="switch-wrapper">
+                    <label class="switch">
+                        <input type="checkbox" id="goldPaySwitch" checked onchange="saveSwitchConfig()">
+                        <span class="switch-slider"></span>
+                    </label>
+                    <div>
+                        <div class="switch-label" id="goldPayStatus">已开启</div>
+                        <div class="switch-hint">关闭后用户将无法使用物业金支付</div>
                     </div>
-                    <div class="form-group" id="onlineFixedGroup" style="display: none;">
-                        <label>固定奖励金额</label>
-                        <div class="input-unit">
-                            <input type="number" id="onlineFixed" placeholder="例如 5" min="0" step="0.01" value="5">
-                            <span class="unit">元</span>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" onclick="saveConfig('online')">保存配置</button>
-                </div>
-
-                <div class="current-rule" id="onlineCurrentRule">
-                    当前规则：<strong>按百分比 1.0%</strong> 奖励物业金
                 </div>
             </div>
 
             <div class="config-card">
                 <div class="config-card-header">
-                    <div class="icon icon-offline">📱</div>
+                    <div class="icon icon-online">🛒</div>
                     <div>
-                        <h3>线下扫码支付奖励</h3>
-                        <p>用户通过线下扫码支付后获得的物业金奖励</p>
+                        <h3>线上购物抵扣比例</h3>
+                        <p>用户线上购物时，订单金额可抵扣物业金的比例</p>
                     </div>
                 </div>
-
-                <div class="toggle-group" id="offlineToggleGroup">
-                    <button class="toggle-btn active" data-type="percent" onclick="switchMode('offline', 'percent')">按百分比</button>
-                    <button class="toggle-btn" data-type="fixed" onclick="switchMode('offline', 'fixed')">固定金额</button>
-                </div>
-
                 <div class="config-form">
-                    <div class="form-group" id="offlinePercentGroup">
-                        <label>支付金额百分比</label>
+                    <div class="form-group">
+                        <label>抵扣比例</label>
                         <div class="input-unit">
-                            <input type="number" id="offlinePercent" placeholder="例如 0.5" min="0" max="100" step="0.1" value="0.5">
+                            <input type="number" id="shopDeductPercent" placeholder="例如 1" min="0" max="100" step="0.1" value="1" oninput="updateShopDeductPreview()">
                             <span class="unit">%</span>
                         </div>
                     </div>
-                    <div class="form-group" id="offlineFixedGroup" style="display: none;">
-                        <label>固定奖励金额</label>
+                    <button class="btn btn-primary" onclick="savePercentConfig('shop')">保存配置</button>
+                </div>
+                <div class="current-rule" id="shopCurrentRule">
+                    当前设置：按订单金额的 <strong>1.0%</strong> 抵扣物业金
+                </div>
+            </div>
+
+            <div class="config-card">
+                <div class="config-card-header">
+                    <div class="icon icon-offline">🏠</div>
+                    <div>
+                        <h3>缴纳物业费抵扣比例</h3>
+                        <p>用户缴纳物业费时，物业金可抵扣物业费的比例</p>
+                    </div>
+                </div>
+                <div class="config-form">
+                    <div class="form-group">
+                        <label>抵扣比例</label>
                         <div class="input-unit">
-                            <input type="number" id="offlineFixed" placeholder="例如 3" min="0" step="0.01" value="3">
+                            <input type="number" id="propertyDeductPercent" placeholder="例如 10" min="0" max="100" step="0.1" value="10" oninput="updatePropertyDeductPreview()">
+                            <span class="unit">%</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="savePercentConfig('property')">保存配置</button>
+                </div>
+                <div class="current-rule" id="propertyCurrentRule">
+                    当前设置：按物业费的 <strong>10.0%</strong> 抵扣物业金
+                </div>
+            </div>
+
+            <div class="config-card">
+                <div class="config-card-header">
+                    <div class="icon icon-online">💰</div>
+                    <div>
+                        <h3>每户首次购物返还物业金上限</h3>
+                        <p>每户首次线上购物可获得的物业金返还金额上限</p>
+                    </div>
+                </div>
+                <div class="config-form">
+                    <div class="form-group">
+                        <label>返还上限金额</label>
+                        <div class="input-unit">
+                            <input type="number" id="firstReturnCap" placeholder="例如 50" min="0" step="0.01" value="50" oninput="updateFirstReturnPreview()">
                             <span class="unit">元</span>
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="saveConfig('offline')">保存配置</button>
+                    <button class="btn btn-primary" onclick="saveReturnCapConfig()">保存配置</button>
                 </div>
-
-                <div class="current-rule" id="offlineCurrentRule">
-                    当前规则：<strong>按百分比 0.5%</strong> 奖励物业金
+                <div class="current-rule" id="firstReturnCurrentRule">
+                    当前设置：每户首次购物返还上限 <strong>50.00 元</strong>
                 </div>
             </div>
         </main>
@@ -494,8 +569,10 @@
 
     <script>
         var config = {
-            online: { mode: 'percent', percent: 1, fixed: 5 },
-            offline: { mode: 'percent', percent: 0.5, fixed: 3 }
+            goldPayEnabled: true,
+            shopDeductPercent: 1,
+            propertyDeductPercent: 10,
+            firstReturnCap: 50
         };
 
         function toggleSubmenu(element) {
@@ -511,59 +588,43 @@
             }
         }
 
-        function switchMode(category, mode) {
-            config[category].mode = mode;
-
-            var toggleGroup = document.getElementById(category + 'ToggleGroup');
-            var buttons = toggleGroup.querySelectorAll('.toggle-btn');
-            buttons.forEach(function(btn) {
-                btn.classList.remove('active');
-                if (btn.dataset.type === mode) {
-                    btn.classList.add('active');
-                }
-            });
-
-            var percentGroup = document.getElementById(category + 'PercentGroup');
-            var fixedGroup = document.getElementById(category + 'FixedGroup');
-
-            if (mode === 'percent') {
-                percentGroup.style.display = 'flex';
-                fixedGroup.style.display = 'none';
-            } else {
-                percentGroup.style.display = 'none';
-                fixedGroup.style.display = 'flex';
-            }
-        }
-
-        function saveConfig(category) {
-            var mode = config[category].mode;
-            var value;
-
-            if (mode === 'percent') {
-                value = parseFloat(document.getElementById(category + 'Percent').value) || 0;
-                config[category].percent = value;
-            } else {
-                value = parseFloat(document.getElementById(category + 'Fixed').value) || 0;
-                config[category].fixed = value;
-            }
-
-            updateCurrentRule(category);
+        function saveSwitchConfig() {
+            var checkbox = document.getElementById('goldPaySwitch');
+            config.goldPayEnabled = checkbox.checked;
+            document.getElementById('goldPayStatus').textContent = checkbox.checked ? '已开启' : '已关闭';
             showToast();
         }
 
-        function updateCurrentRule(category) {
-            var ruleEl = document.getElementById(category + 'CurrentRule');
-            var mode = config[category].mode;
-            var prefix = category === 'online' ? '当前规则：' : '当前规则：';
-            var scene = category === 'online' ? '线上购物' : '线下扫码支付';
+        function updateShopDeductPreview() {
+            var pct = parseFloat(document.getElementById('shopDeductPercent').value) || 0;
+            document.getElementById('shopCurrentRule').innerHTML = '当前设置：按订单金额的 <strong>' + pct.toFixed(1) + '%</strong> 抵扣物业金';
+        }
 
-            if (mode === 'percent') {
-                var pct = parseFloat(document.getElementById(category + 'Percent').value) || config[category].percent;
-                ruleEl.innerHTML = prefix + scene + ' 按 <strong>百分比 ' + pct.toFixed(1) + '%</strong> 奖励物业金';
+        function updatePropertyDeductPreview() {
+            var pct = parseFloat(document.getElementById('propertyDeductPercent').value) || 0;
+            document.getElementById('propertyCurrentRule').innerHTML = '当前设置：按物业费的 <strong>' + pct.toFixed(1) + '%</strong> 抵扣物业金';
+        }
+
+        function savePercentConfig(type) {
+            if (type === 'shop') {
+                config.shopDeductPercent = parseFloat(document.getElementById('shopDeductPercent').value) || 0;
+                updateShopDeductPreview();
             } else {
-                var fixed = parseFloat(document.getElementById(category + 'Fixed').value) || config[category].fixed;
-                ruleEl.innerHTML = prefix + scene + ' 按 <strong>固定金额 ' + fixed.toFixed(2) + ' 元</strong> 奖励物业金';
+                config.propertyDeductPercent = parseFloat(document.getElementById('propertyDeductPercent').value) || 0;
+                updatePropertyDeductPreview();
             }
+            showToast();
+        }
+
+        function updateFirstReturnPreview() {
+            var val = parseFloat(document.getElementById('firstReturnCap').value) || 0;
+            document.getElementById('firstReturnCurrentRule').innerHTML = '当前设置：每户首次购物返还上限 <strong>' + val.toFixed(2) + ' 元</strong>';
+        }
+
+        function saveReturnCapConfig() {
+            config.firstReturnCap = parseFloat(document.getElementById('firstReturnCap').value) || 0;
+            updateFirstReturnPreview();
+            showToast();
         }
 
         function showToast() {
@@ -573,26 +634,6 @@
                 toast.classList.remove('show');
             }, 2000);
         }
-
-        document.getElementById('onlinePercent').addEventListener('input', function() {
-            config.online.percent = parseFloat(this.value) || 0;
-            updateCurrentRule('online');
-        });
-
-        document.getElementById('onlineFixed').addEventListener('input', function() {
-            config.online.fixed = parseFloat(this.value) || 0;
-            updateCurrentRule('online');
-        });
-
-        document.getElementById('offlinePercent').addEventListener('input', function() {
-            config.offline.percent = parseFloat(this.value) || 0;
-            updateCurrentRule('offline');
-        });
-
-        document.getElementById('offlineFixed').addEventListener('input', function() {
-            config.offline.fixed = parseFloat(this.value) || 0;
-            updateCurrentRule('offline');
-        });
     </script>
 </body>
 </html>
